@@ -1,0 +1,22 @@
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
+import dotenv from 'dotenv';
+import * as schema from '../shared/schema.js'; 
+
+dotenv.config();
+
+export const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+pool.on('connect', () => {
+  console.log('📦 Connected to Neon PostgreSQL Database');
+});
+
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle client', err);
+  process.exit(-1);
+});
+
+// Wrap your Neon pool with Drizzle
+export const db = drizzle(pool, { schema });
