@@ -42,3 +42,13 @@ export const jobApplications = pgTable('job_applications', {
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
+
+
+export const targetCompanies = pgTable('target_companies', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(), // e.g., 'Vercel'
+  atsProvider: varchar('ats_provider', { length: 50 }).notNull(), // 'greenhouse' or 'lever'
+  boardToken: varchar('board_token', { length: 255 }).notNull().unique(), // The exact string in the URL, e.g., 'vercel'
+  isActive: boolean('is_active').default(true), // A switch to temporarily pause scraping a specific company
+  createdAt: timestamp('created_at').defaultNow(),
+});

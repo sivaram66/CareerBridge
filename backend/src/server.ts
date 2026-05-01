@@ -11,7 +11,8 @@ import scraperRoutes from './modules/scraper/scraper.routes.js';
 import authRoutes from './modules/auth/auth.routes.js'; 
 import profileRoutes from './modules/profile/profile.routes.js';
 import crmRoutes from './modules/crm/crm.routes.js';
-
+import aggregatorRoutes from './modules/aggregator/aggregator.routes.js';
+import { startAggregatorCron } from './modules/aggregator/aggregator.cron.js';
 // ... rest of your setup code ...
 
 dotenv.config();
@@ -29,6 +30,7 @@ app.use('/api/scraper', scraperRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/crm', crmRoutes);
+app.use('/api/aggregator', aggregatorRoutes);
 
 // Health Check Route
 app.get('/health', (req: Request, res: Response) => {
@@ -41,6 +43,7 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, async () => {
   console.log(`CareerBridge Server live on port ${PORT}`);
   // Quick check to ensure DB is actually reachable on startup
+  startAggregatorCron();
   try {
     await pool.query('SELECT 1');
   } catch (error) {
