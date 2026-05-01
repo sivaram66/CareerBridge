@@ -2,11 +2,16 @@ import { Queue, Worker } from 'bullmq';
 import IORedis from 'ioredis';
 import { scrapeCustomJob } from '../scraper/json-ld.test.ts'; 
 import { saveJobToDatabase } from '../db/saveJob.ts';
+import dotenv from 'dotenv';
+dotenv.config();
 
-// 1. Paste your WORKING Upstash URL here
-const REDIS_URL = 'rediss://default:gQAAAAAAAbThAAIgcDE1ODI2NGQ0YWI4YTQ0MTQyYmUyZmUwMGEzMjFhYTJkMg@sterling-pegasus-111841.upstash.io:6379'; // WAIT! Use the rediss:// string!
+const REDIS_URL = process.env.REDIS_URL as string;
+
+if (!REDIS_URL) {
+  throw new Error(' REDIS_URL not found in .env');
+}
 // It should look like: 'rediss://default:YOUR_PASSWORD@sterling-pegasus-111841.upstash.io:PORT'
-const redisConnection = new IORedis('rediss://default:gQAAAAAAAbThAAIgcDE1ODI2NGQ0YWI4YTQ0MTQyYmUyZmUwMGEzMjFhYTJkMg@sterling-pegasus-111841.upstash.io:6379', {
+const redisConnection = new IORedis(REDIS_URL, {
   maxRetriesPerRequest: null,
 });
 

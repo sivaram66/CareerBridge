@@ -1,7 +1,11 @@
 import { Redis } from 'ioredis';
+import dotenv from 'dotenv';
+dotenv.config();
+const REDIS_URL = process.env.REDIS_URL as string;
 
-// Replace this with your Upstash URL (rediss://...) OR your local Docker URL
-const REDIS_URL = 'rediss://default:gQAAAAAAAbThAAIgcDE1ODI2NGQ0YWI4YTQ0MTQyYmUyZmUwMGEzMjFhYTJkMg@sterling-pegasus-111841.upstash.io:6379'; 
+if (!REDIS_URL) {
+  throw new Error(' REDIS_URL not found in .env');
+}
 
 const redis = new Redis(REDIS_URL);
 
