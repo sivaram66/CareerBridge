@@ -1,55 +1,52 @@
-// src/modules/aggregator/aggregator.service.ts
+import { scrapeQueue } from '../queue/jobQueue.js';
 
-export const fetchGreenhouseJobs = async (boardToken: string) => {
-  // 1. Construct the target URL dynamically
-  const url = `https://boards-api.greenhouse.io/v1/boards/${boardToken}/jobs`;
+// We are using a generic API URL here for the example. 
+// In production, this would be your Adzuna, Jooble, or SerpApi endpoint.
+const EXTERNAL_API_URL = 'https://api.example-job-board.com/v1/jobs?keyword=node.js&location=remote';
+
+export const fetchJobsFromExternalAPI = async () => {
+  console.log('🌊 [FIREHOSE] Opening the external job API valve...');
 
   try {
-    // 2. Make the HTTP request to the ATS
-    const response = await fetch(url);
+    // 1. Ask the external API for the latest jobs
+    const response = await fetch(EXTERNAL_API_URL, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        // 'Authorization': `Bearer ${process.env.API_KEY}` // You will need this for real APIs
+      }
+    });
 
-    // 3. Handle 404s or API errors safely
     if (!response.ok) {
-      throw new Error(`Greenhouse API returned ${response.status} for ${boardToken}`);
+      throw new Error(`External API failed with status: ${response.status}`);
     }
 
-    // 4. Parse the raw JSON data
     const data = await response.json();
+    
+    // Assume the API returns an array of objects, and each object has a 'job_url' property
+    const jobListings = data.results || []; 
 
-    // 5. Clean and format the data
-    // 5. Clean, format, and FILTER the data
-    const formattedJobs = data.jobs
-      .map((job: any) => ({
-        title: job.title,
-        applyUrl: job.absolute_url,
-        externalId: job.id.toString(),
-        location: job.location.name,
-      }))
-      .filter((job: any) => {
-        // Convert to lowercase for easy text searching
-        const titleLower = job.title.toLowerCase();
-        const locLower = job.location.toLowerCase();
+    if (jobListings.length === 0) {
+      console.log('🤷‍♂️ [FIREHOSE] No new jobs found from the API right now.');
+      return;
+    }
 
-        // 1. Must be an engineering/tech role
-        const isTechRole = titleLower.includes('engineer') || 
-                           titleLower.includes('developer') || 
-                           titleLower.includes('backend') ||
-                           titleLower.includes('frontend');
+    console.log(`🎯 [FIREHOSE] Found ${jobListings.length} new jobs! Pushing to the conveyor belt...`);
 
-        // 2. Must be remote-friendly or specifically in India
-        const isRemote = locLower.includes('remote') || 
-                         locLower.includes('india') || 
-                         locLower.includes('anywhere') ||
-                         locLower.includes('global');
+    // 2. Loop through the results and drop each URL onto your Redis Queue
+    for (const job of jobListings) {
+      if (job.job_url) {
+        // We add it to the exact same queue your Apple Radar uses
+        await scrapeQueue.add('scrape-job', { 
+          url: job.job_url,
+          companyName: job.company_name || 'Unknown' 
+        });
+      }
+    }
 
-        // Only keep the job if BOTH conditions are true
-        return isTechRole && isRemote;
-      });
-
-    return formattedJobs;
+    console.log('✅ [FIREHOSE] Successfully loaded all new jobs onto the Redis Queue.');
 
   } catch (error) {
-    console.error(`Failed to fetch from Greenhouse (${boardToken}):`, error);
-    return []; // Return an empty array so our server doesn't crash if one company goes offline
+    console.error('❌ [FIREHOSE] Error fetching from external API:', error);
   }
 };

@@ -2,8 +2,14 @@ import { pgTable, serial, varchar, text, boolean, timestamp,integer } from 'driz
 
 export const jobs = pgTable('jobs', {
   id: serial('id').primaryKey(),
+  
+  // The unique ID from Greenhouse/Lever to prevent duplicate inserts
+  externalJobId: varchar('external_job_id', { length: 255 }).unique().notNull(), 
+  
   companyName: varchar('company_name', { length: 255 }).notNull(),
   title: varchar('title', { length: 255 }).notNull(),
+  department: varchar('department', { length: 255 }), // Added for filtering
+  location: varchar('location', { length: 255 }),     // Added to catch ATS location string
   description: text('description'),
   salaryRange: varchar('salary_range', { length: 100 }),
   isRemoteIndia: boolean('is_remote_india').default(true),
@@ -11,7 +17,6 @@ export const jobs = pgTable('jobs', {
   applyUrl: text('apply_url').notNull(),
   createdAt: timestamp('created_at').defaultNow(),
 });
-
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),

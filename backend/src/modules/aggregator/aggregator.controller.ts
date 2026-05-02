@@ -1,28 +1,33 @@
 import type { Request, Response } from 'express';
-import { db } from '../../config/db.js';
-import { targetCompanies } from '../../shared/schema.js';
+import { scrapeQueue } from '../queue/jobQueue.js';
 
-export const addTargetCompanyHandler = async (req: Request, res: Response): Promise<void> => {
+export const handleSocialWebhook = async (req: Request, res: Response): Promise<void> => {
+  console.log('🚨 [WEBHOOK] Incoming transmission received!');
+
   try {
-    const { name, atsProvider, boardToken } = req.body;
+    // 1. Unpack the payload sent by Zapier/Make.com
+    const { jobUrl, companyName, source } = req.body;
 
-    // 1. Validation: Make sure the user provided all the required fields
-    if (!name || !atsProvider || !boardToken) {
-      res.status(400).json({ error: 'Please provide name, atsProvider, and boardToken' });
+    // 2. Validate the data
+    if (!jobUrl) {
+      console.log('⚠️ [WEBHOOK] Rejected: No URL provided in the payload.');
+      res.status(400).json({ error: 'Missing jobUrl in webhook payload' });
       return;
     }
 
-    // 2. Database Insert: Save the new company to our target list
-    const newCompany = await db.insert(targetCompanies).values({
-      name,
-      atsProvider,
-      boardToken
-    }).returning();
+    console.log(`🎯 [WEBHOOK] Sniper caught a new job from ${source || 'the web'}! Pushing to queue...`);
 
-    // 3. Success Response: Send the newly created row back to Postman
-    res.status(201).json(newCompany[0]);
+    // 3. Drop it onto the exact same Redis Conveyor Belt
+    await scrapeQueue.add('scrape-job', { 
+      url: jobUrl,
+      companyName: companyName || 'Unknown Startup' 
+    });
+
+    // 4. Send a receipt back to Zapier so it knows the delivery was successful
+    res.status(200).json({ success: true, message: 'Job successfully loaded onto the conveyor belt.' });
+
   } catch (error) {
-    console.error('Failed to add target company:', error);
-    res.status(500).json({ error: 'Server error while adding company' });
+    console.error('❌ [WEBHOOK] Error processing incoming payload:', error);
+    res.status(500).json({ error: 'Internal server error processing webhook' });
   }
 };

@@ -31,8 +31,8 @@ const worker = new Worker('job-scrape-queue', async (job) => {
     await saveJobToDatabase(extractedJobData, url);
   }
 
-  console.log('[WORKER] ⏳ Resting for 2 seconds...');
-  await new Promise(resolve => setTimeout(resolve, 2000));
+  console.log('[WORKER] ⏳ Resting for 5 seconds...');
+  await new Promise(resolve => setTimeout(resolve, 5000));
 
 }, { 
   connection: redisConnection,
