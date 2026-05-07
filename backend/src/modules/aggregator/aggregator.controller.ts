@@ -27,7 +27,7 @@ export const handleSocialWebhook = async (req: Request, res: Response): Promise<
     res.status(200).json({ success: true, message: 'Job successfully loaded onto the conveyor belt.' });
 
   } catch (error) {
-    console.error('❌ [WEBHOOK] Error processing incoming payload:', error);
+    console.error('[WEBHOOK] Error processing incoming payload:', error);
     res.status(500).json({ error: 'Internal server error processing webhook' });
   }
 };

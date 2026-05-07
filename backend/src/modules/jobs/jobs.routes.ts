@@ -1,14 +1,18 @@
+// D:\Projects\CareerBridge\backend\src\modules\jobs\jobs.routes.ts
+
 import { Router } from 'express';
-import { getJobsHandler, createJobHandler, getJobMatchHandler } from './jobs.controller.js';
-import { requireAuth } from '../../shared/middleware/auth.middleware.js'; // Import the bouncer
+// 👉 Update your imports to perfectly match what is actually in your controller!
+import { getJobsHandler, getJobById, analyzeJobWithAI } from './jobs.controller.js';
 
 const router = Router();
 
+// 1. Fetch all jobs for the main JobExplorer feed
 router.get('/', getJobsHandler);
-router.post('/', createJobHandler);
 
-// GET /api/jobs/:id/match
-// New protected route that triggers the AI
-router.get('/:id/match', requireAuth, getJobMatchHandler);
+// 2. Fetch a single job for the new Job Details page
+router.get('/:id', getJobById);
+
+// 3. The new Gemini AI Matcher route
+router.post('/:id/analyze', analyzeJobWithAI);
 
 export default router;

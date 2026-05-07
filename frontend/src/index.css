@@ -1,9 +1,19 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-/* A nice dark-mode background for our SaaS */
-body {
-  background-color: #0f172a; 
-  color: #f8fafc;
+@theme {
+  /* This tells Tailwind v4 to use this font everywhere by default */
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-[#FAFAFA] text-slate-900 antialiased;
+    /* This forces the body to use the premium font as a fail-safe */
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+  
+  ::selection {
+    @apply bg-indigo-100 text-indigo-900;
+  }
 }

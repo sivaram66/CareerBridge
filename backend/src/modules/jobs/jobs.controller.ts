@@ -1,67 +1,66 @@
-import type { Request, Response } from 'express';
-import * as jobService from './jobs.service.js';
+// /src/modules/jobs/jobs.controller.ts
+
+import express,{ type Request, type Response } from 'express';
 import { db } from '../../config/db.js';
-import { userProfiles, jobs } from '../../shared/schema.js';
+import { jobs } from '../../shared/schema.js';
 import { eq } from 'drizzle-orm';
-import { calculateMatchScore } from '../ai-summarizer/ai.service.js';
-import type { AuthRequest } from '../../shared/middleware/auth.middleware.js';
+import { getAllJobs } from './jobs.service.js'; 
 
+// Import the brain from our newly separated AI service!
+import { analyzeJobMatch } from '../ai-summarizer/ai.service.js'; 
 
+// ==========================================
+// 1. Fetch All Jobs (Main Feed)
+// ==========================================
 export const getJobsHandler = async (req: Request, res: Response) => {
   try {
-    const allJobs = await jobService.getAllJobs();
-    res.status(200).json(allJobs);
-  } catch (error) {
-    console.error('Error fetching jobs:', error);
-    res.status(500).json({ error: 'Failed to fetch jobs' });
+    const allJobs = await getAllJobs(); 
+    res.json(allJobs);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 };
 
-export const createJobHandler = async (req: Request, res: Response) => {
+// ==========================================
+// 2. Fetch a Single Job (Job Details Page)
+// ==========================================
+export const getJobById = async (req: Request, res: Response) => {
   try {
-    const newJob = await jobService.createJob(req.body);
-    res.status(201).json(newJob);
-  } catch (error) {
-    console.error('Error creating job:', error);
-    res.status(500).json({ error: 'Failed to create job listing' });
+    const { id } = req.params;
+    const [job] = await db.select().from(jobs).where(eq(jobs.id, parseInt(id)));
+    
+    if (!job) return res.status(404).json({ error: 'Job not found' });
+    res.json(job);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 };
 
-
-export const getJobMatchHandler = async (req: AuthRequest, res: Response): Promise<void> => {
+// ==========================================
+// 3. The AI Analyzer Engine
+// ==========================================
+export const analyzeJobWithAI = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.userId;
-    const jobId = parseInt(req.params.id); // Grabs the ID from the URL (e.g., /api/jobs/1/match)
+    const { id } = req.params;
+    const { userProfile } = req.body; 
 
-    if (!userId) {
-      res.status(401).json({ error: 'Unauthorized' });
-      return;
-    }
+    // Fetch the job from DB
+    const [job] = await db.select().from(jobs).where(eq(jobs.id, parseInt(id)));
+    if (!job) return res.status(404).json({ error: 'Job not found' });
 
-    // 1. Get the user's saved tech stack
-    const profileQuery = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId));
-    const userStack = profileQuery[0]?.techStack;
+    // Let the AI Service do the heavy lifting
+    const aiAnalysis = await analyzeJobMatch(
+      job.title, 
+      job.companyName || 'Confidential', 
+      job.description || '', 
+      userProfile
+    );
 
-    if (!userStack || userStack.length === 0) {
-      res.status(400).json({ error: 'Please update your profile with your tech stack first.' });
-      return;
-    }
+    // Send the structured data back to React
+    res.json({ analysis: aiAnalysis });
 
-    // 2. Get the specific job description
-    const jobQuery = await db.select().from(jobs).where(eq(jobs.id, jobId));
-    const jobDesc = jobQuery[0]?.description;
-
-    if (!jobDesc) {
-      res.status(404).json({ error: 'Job not found' });
-      return;
-    }
-
-    // 3. Send both to Gemini
-    const matchResult = await calculateMatchScore(userStack, jobDesc);
-    res.status(200).json(matchResult);
-
-  } catch (error) {
-    console.error('Match calculation error:', error);
-    res.status(500).json({ error: 'Failed to calculate match' });
+  } catch (error: any) {
+    console.error("AI Error:", error);
+    res.status(500).json({ error: 'Failed to analyze job.' });
   }
 };
