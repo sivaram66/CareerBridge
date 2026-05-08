@@ -1,5 +1,3 @@
-// /src/modules/ingestion/radar/greenhouse.ts
-
 import { db } from '../../../config/db.js'; 
 import { jobs } from '../../../shared/schema.js'; 
 
@@ -13,7 +11,6 @@ interface GreenhouseJob {
   updated_at: string; 
 }
 
-// 🧠 SMART EXPERIENCE PARSER
 function parseExperienceRequirements(jobDescription: string, jobTitle: string) {
   const text = (jobDescription || '').toLowerCase();
   const title = (jobTitle || '').toLowerCase();
@@ -70,7 +67,7 @@ export async function ingestGreenhouseJobs(boardToken: string, companyName: stri
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - 45);
 
-    // DIVERSITY CAP LIMIT
+    // Cap per company to maintain feed diversity
     const MAX_JOBS_PER_COMPANY = 5;
 
     for (const job of rawJobs) {
@@ -123,10 +120,9 @@ export async function ingestGreenhouseJobs(boardToken: string, companyName: stri
           isFeatured: true 
         });
 
-        // 🛑 THE DIVERSITY CAP CHECK
         if (jobsToInsert.length >= MAX_JOBS_PER_COMPANY) {
           console.log(`[RADAR] 🛑 Diversity Cap Reached: Stopping at ${MAX_JOBS_PER_COMPANY} jobs for ${companyName}.`);
-          break; // Exit the loop entirely
+          break;
         }
       }
     }

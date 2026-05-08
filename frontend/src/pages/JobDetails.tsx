@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Star, Sparkles, CheckCircle2 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext'; // Adjust path if needed
+import { useAuth } from '../context/AuthContext';
 
 export default function JobDetails() {
   const { id } = useParams();
@@ -29,14 +29,14 @@ export default function JobDetails() {
     setIsAnalyzing(false);
   };
 
-  // 🧠 LIGHTWEIGHT SANITIZER: Keeps the original structure, just decodes HTML safely
+
   const formatJobDescription = (text: string) => {
     if (!text) return '';
     const txt = document.createElement("textarea");
     txt.innerHTML = text;
     let formatted = txt.value;
     
-    // Simply clean up excessive blank lines to keep the UI tight
+
     formatted = formatted.replace(/\n{3,}/g, '\n\n');
     
     return formatted;
@@ -55,9 +55,7 @@ export default function JobDetails() {
     <div className="min-h-screen bg-[#FAFAFA] pb-32 pt-10 font-sans">
       <div className="max-w-6xl mx-auto px-6">
         
-        {/* =========================================
-            1. TOP HERO BANNER
-        ========================================== */}
+
         <div className="mb-10">
           <div className="flex flex-col md:flex-row justify-between items-start gap-6">
             
@@ -122,9 +120,7 @@ export default function JobDetails() {
           </div>
         </div>
 
-        {/* =========================================
-            2. STATS RIBBON 
-        ========================================== */}
+
         <div className="grid grid-cols-2 gap-6 py-6 border-y border-gray-200 mb-10">
           <div className="px-4 border-l-2 border-transparent md:border-none">
             <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Experience</div>
@@ -138,14 +134,12 @@ export default function JobDetails() {
           </div>
         </div>
 
-        {/* =========================================
-            3. MAIN CONTENT 
-        ========================================== */}
+
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-12">
           
           <div className="space-y-12">
             
-            {/* AI SCANNER TOOL */}
+
             {!aiData && (
               <div className="bg-white p-8 rounded-2xl border border-indigo-100 shadow-sm relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full blur-3xl opacity-50 -mr-20 -mt-20 pointer-events-none"></div>
@@ -183,7 +177,7 @@ export default function JobDetails() {
               </div>
             )}
 
-            {/* AI POST-ANALYSIS CONTENT */}
+
             {aiData && (
               <div className="space-y-8 bg-indigo-50/50 p-8 rounded-2xl border border-indigo-50">
                 <div className="flex items-center gap-4 border-b border-indigo-100 pb-6">
@@ -217,27 +211,17 @@ export default function JobDetails() {
               </div>
             )}
 
-            {/* THE RAW DESCRIPTION (Styled via Tailwind Prose) */}
+
             <div>
               <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">About the Role</h2>
               
               <div 
                 className="prose prose-gray max-w-none text-[15px] leading-relaxed text-gray-600 
-                
-                /* Standardize Native HTML Headings */
                 prose-headings:font-bold prose-headings:text-gray-900 prose-headings:mt-8 prose-headings:mb-4
                 prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg
-                
-                /* If companies use bold tags for headings, make them look nice */
                 prose-strong:font-semibold prose-strong:text-gray-900 
-                
-                /* List Styling */
                 prose-ul:my-4 prose-li:my-1
-                
-                /* Link Styling */
                 prose-a:text-indigo-600 prose-a:no-underline hover:prose-a:underline
-                
-                /* MAGIC RULE: If it's pure raw text with no HTML tags, this forces line breaks to render properly */
                 whitespace-pre-line"
 
                 dangerouslySetInnerHTML={{ __html: formatJobDescription(job.description) }} 
@@ -296,14 +280,12 @@ export default function JobDetails() {
         </div>
 
       </div>
-      {/* =========================================
-          4. THE AUTH INTERCEPTION MODAL
-      ========================================== */}
+
       {showAuthModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 relative animate-in fade-in zoom-in-95 duration-200">
             
-            {/* Close Button */}
+
             <button 
               onClick={() => setShowAuthModal(false)}
               className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors"

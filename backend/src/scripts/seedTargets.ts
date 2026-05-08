@@ -1,9 +1,9 @@
-// /src/scripts/seedTargets.ts
+
 
 import { db } from '../config/db.js';
 import { targetCompanies } from '../shared/schema.js';
 
-// 1. The Elite Heavy-Hitter Startup List
+
 const eliteStartups = [
   "Airbnb", "Stripe", "Coinbase", "Dropbox", "Reddit", "DoorDash", "Instacart", 
   "Plaid", "Brex", "Figma", "Notion", "Vercel", "Supabase", "Linear", "Raycast", 
@@ -23,7 +23,7 @@ const eliteStartups = [
   "Redis", "Elastic", "Splunk", "Datadog", "New Relic", "PagerDuty", "GitHub"
 ];
 
-// 2. Your Massive Database of Companies
+
 const myPreviousList = [
   "2iSolutions", "360 Degree Cloud Technologies", "5C Network", "5ireChain", 
   "63 moons Technologies", "6DegreesIT", "91social", "A-1 Technology", 
@@ -322,10 +322,10 @@ const myPreviousList = [
   "Zumen Inc", "Zuper"
 ];
 
-// Combine the lists
+
 const allCompanies = [...eliteStartups, ...myPreviousList];
 
-// The Tokenizer: Converts "360 Degree Cloud Technologies" to "360degreecloudtechnologies"
+// Converts company name to a URL-safe board token
 function generateBoardToken(companyName: string): string {
   return companyName.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
@@ -334,16 +334,15 @@ async function seedDatabase() {
   console.log(`🌱 Starting Seeder: Processing ${allCompanies.length} companies...`);
 
   const formattedTargets = allCompanies.map(name => {
-    return {
+    return ({
       name: name,
-      atsProvider: 'greenhouse', // We default to Greenhouse for the first sweep
+      atsProvider: 'greenhouse',
       boardToken: generateBoardToken(name),
       isActive: true,
     };
   });
 
   try {
-    // We inject them into the database, ignoring any duplicates automatically
     await db.insert(targetCompanies)
       .values(formattedTargets)
       .onConflictDoNothing({ target: targetCompanies.boardToken });

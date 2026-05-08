@@ -4,8 +4,7 @@ export async function cleanVault() {
   console.log('\n[JANITOR] 🧹 Waking up Database Janitor...');
 
   try {
-    // 1. THE 30-DAY SOFT DELETE
-    // Flips the active switch to false, hiding it from the main feed
+    // 30-day soft delete: hides stale jobs from the feed without losing data
     const softDeleteQuery = `
       UPDATE jobs 
       SET is_active = false, is_featured = false
@@ -15,8 +14,7 @@ export async function cleanVault() {
     const softResult = await pool.query(softDeleteQuery);
     console.log(`[JANITOR] 📦 Soft Archived: ${softResult.rowCount} jobs older than 30 days.`);
 
-    // 2. THE 45-DAY HARD DELETE
-    // Permanently frees up your 500 MB Neon storage
+    // 45-day hard delete: frees up Neon storage (500 MB free tier limit)
     const hardDeleteQuery = `
       DELETE FROM jobs 
       WHERE created_at < NOW() - INTERVAL '45 days';

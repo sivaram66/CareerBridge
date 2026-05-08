@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const sendOTP = async (toEmail: string, otpCode: string) => {
-  // 🚀 DEVELOPER BYPASS: Print the OTP to the terminal so we can test the UI right now!
+  // Dev bypass: prints OTP to terminal so registration flow can be tested without Brevo
   console.log(`\n=========================================`);
   console.log(`🔐 NEW OTP REQUEST:`);
   console.log(`📧 To: ${toEmail}`);
@@ -16,7 +16,7 @@ export const sendOTP = async (toEmail: string, otpCode: string) => {
 
     if (!apiKey) {
       console.error("❌ Missing BREVO_API_KEY in .env");
-      return false; // We return true anyway in dev so the frontend moves to the next step
+      return false;
     }
 
     const response = await axios.post(
@@ -49,8 +49,7 @@ export const sendOTP = async (toEmail: string, otpCode: string) => {
     return true;
 
   } catch (error: any) {
-    // We catch the Brevo error so it doesn't crash our app, but we still return true 
-    // so our frontend transitions to the OTP screen!
+    // Returns true on Brevo failure so frontend still transitions to OTP screen during dev/sandbox
     console.error("❌ Brevo Error (Expected during sandbox):", error.response?.data?.message || error.message);
     return true; 
   }

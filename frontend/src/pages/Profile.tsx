@@ -12,19 +12,19 @@ export default function Profile() {
   const [message, setMessage] = useState({ text: '', type: '' });
 
   const handleLogout = () => {
-    logout();      // Clears the token
-    navigate('/'); // Kicks you to the home page!
+    logout();
+    navigate('/');
   };
-  // Massive state object to hold everything from your Drizzle schema
+
   const [formData, setFormData] = useState({
     fullName: '', headline: '', experienceYears: '', phone: '', location: '',
     college: '', degree: '', graduationYear: '', cgpa: '',
     currentCompany: '', currentRole: '',
     githubUrl: '', linkedinUrl: '', portfolioUrl: '', resumeUrl: '',
-    techStack: '', preferredRoles: '', preferredLocations: '' // We store arrays as comma-separated strings for the UI
+    techStack: '', preferredRoles: '', preferredLocations: ''
   });
 
-  // 1. FETCH PROFILE ON LOAD
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -33,7 +33,7 @@ export default function Profile() {
         });
         
         const p = res.data;
-        // Map backend data to form state (converting arrays to strings for the input fields)
+
         setFormData({
           fullName: p.fullName || '',
           headline: p.headline || '',
@@ -67,13 +67,13 @@ export default function Profile() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 2. SAVE PROFILE
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     setMessage({ text: '', type: '' });
 
-    // Format strings back into arrays before sending to Postgres
+
     const payload = {
       ...formData,
       experienceYears: formData.experienceYears ? parseInt(formData.experienceYears as string) : null,
@@ -101,7 +101,7 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans pb-20">
       
-      {/* Brand Header */}
+
       <div className="bg-[#1B1E16] text-white pt-10 pb-32 px-6">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           <Link to="/" className="flex items-center space-x-3 cursor-pointer">
@@ -116,7 +116,7 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Main Form Container */}
+
       <div className="max-w-4xl mx-auto px-6 -mt-20 relative z-10">
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 md:p-12">
           
@@ -138,7 +138,7 @@ export default function Profile() {
 
           <form onSubmit={handleSubmit} className="space-y-12">
             
-            {/* SECTION 1: Personal Info */}
+
             <section>
               <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2"><User className="w-4 h-4"/> Basic Info</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -161,7 +161,7 @@ export default function Profile() {
               </div>
             </section>
 
-            {/* SECTION 2: Professional & Tech */}
+
             <section>
               <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2"><Briefcase className="w-4 h-4"/> Professional</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -184,7 +184,7 @@ export default function Profile() {
               </div>
             </section>
 
-            {/* SECTION 3: Education */}
+
             <section>
               <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2"><GraduationCap className="w-4 h-4"/> Education</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -207,7 +207,7 @@ export default function Profile() {
               </div>
             </section>
 
-            {/* SECTION 4: Preferences & Links */}
+
             <section>
               <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2"><LinkIcon className="w-4 h-4"/> Preferences & Assets</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">

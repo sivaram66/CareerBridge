@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-// 1. Define our TypeScript interfaces for strict typing
+
 interface Job {
   id: number;
   companyName: string;
@@ -22,7 +22,7 @@ export default function JobFeed() {
   const [matchResults, setMatchResults] = useState<Record<number, MatchResult>>({});
   const [calculatingId, setCalculatingId] = useState<number | null>(null);
 
-  // 2. Fetch all jobs on component mount
+
   useEffect(() => {
     const fetchJobs = async () => {
       try {
@@ -41,7 +41,7 @@ export default function JobFeed() {
     fetchJobs();
   }, []);
 
-  // 3. The function that triggers your Gemini AI Matcher
+
   const handleCalculateMatch = async (jobId: number) => {
     setCalculatingId(jobId);
     try {
@@ -50,7 +50,7 @@ export default function JobFeed() {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      // Save the result in our state object, keyed by the jobId
+
       setMatchResults(prev => ({
         ...prev,
         [jobId]: response.data
@@ -87,12 +87,12 @@ export default function JobFeed() {
               </a>
             </div>
 
-            {/* Displaying the AI generated 3-bullet description */}
+
             <div className="text-slate-300 mb-6 whitespace-pre-wrap text-sm bg-slate-900/50 p-4 rounded">
               {job.description}
             </div>
 
-            {/* The AI Match Section */}
+
             <div className="border-t border-slate-700 pt-4 mt-4">
               {matchResults[job.id] ? (
                 <div className="bg-slate-900 p-4 rounded-lg border border-blue-500/30">

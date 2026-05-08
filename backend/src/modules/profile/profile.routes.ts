@@ -4,7 +4,6 @@ import { requireAuth } from '../../middleware/auth.middleware.js';
 
 const router = Router();
 
-// 🛡️ Apply the Security Guard to all profile routes
 router.use(requireAuth);
 
 // GET /api/profile

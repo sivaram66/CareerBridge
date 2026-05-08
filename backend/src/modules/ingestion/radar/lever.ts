@@ -1,9 +1,6 @@
-// /src/modules/ingestion/radar/lever.ts
-
 import axios from 'axios';
 import { pool } from '../../../config/db.js';
 
-// 🧠 SMART EXPERIENCE PARSER
 function parseExperienceRequirements(jobDescription: string, jobTitle: string) {
   const text = (jobDescription || '').toLowerCase();
   const title = (jobTitle || '').toLowerCase();
@@ -53,9 +50,9 @@ export async function sweepLever(companyName: string, boardToken: string) {
 
     const jobsToInsert: any[] = [];
     const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - 45); // 45 days ago
+    cutoffDate.setDate(cutoffDate.getDate() - 45);
 
-    // DIVERSITY CAP LIMIT
+    // Cap per company to maintain feed diversity
     const MAX_JOBS_PER_COMPANY = 5;
 
     for (const job of rawJobs) {
@@ -111,10 +108,9 @@ export async function sweepLever(companyName: string, boardToken: string) {
           is_featured: true 
         });
 
-        // 🛑 THE DIVERSITY CAP CHECK
         if (jobsToInsert.length >= MAX_JOBS_PER_COMPANY) {
           console.log(`[RADAR] 🛑 Diversity Cap Reached: Stopping at ${MAX_JOBS_PER_COMPANY} jobs for ${companyName}.`);
-          break; // Exit the loop entirely
+          break;
         }
       }
     }
@@ -135,7 +131,6 @@ export async function sweepLever(companyName: string, boardToken: string) {
           [job.external_job_id, job.company_name, job.title, job.location, job.description, job.is_remote, job.country, job.apply_url, job.experience, job.fresher_ok, job.is_featured]
         );
       } catch (dbError) {
-         // Silently ignore duplicates
       }
     }
 

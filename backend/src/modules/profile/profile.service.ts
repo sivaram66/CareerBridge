@@ -13,7 +13,6 @@ export const updateProfile = async (
     linkedinUrl?: string;
   }
 ) => {
-  // Update the row where the userId matches the token's ID
   const updatedProfile = await db.update(userProfiles)
     .set({
       ...profileData,

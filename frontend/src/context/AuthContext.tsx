@@ -10,7 +10,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  // Check local storage on initial load so they stay logged in after refreshing!
+  // Hydrate from localStorage so sessions persist across page refreshes
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
 
   const login = (newToken: string) => {

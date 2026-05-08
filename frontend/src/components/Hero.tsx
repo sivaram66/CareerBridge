@@ -1,15 +1,30 @@
 import React from 'react';
 import { Search, MapPin, CheckCircle2, ArrowUpRight, Sparkles } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom'; // <-- Added Router imports
 
 export default function Hero() {
+  const navigate = useNavigate(); // <-- Added navigation hook
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Teleport the user to the jobs page when they hit search!
+    navigate('/jobs');
+  };
+
   return (
-    <div className="min-h-screen bg-[#1B1E16] flex flex-col lg:flex-row p-0 lg:p-6 lg:pr-8 gap-8 items-stretch">
+    <div className="min-h-screen bg-[#1B1E16] flex flex-col lg:flex-row p-0 lg:p-6 lg:pr-8 gap-8 items-stretch relative">
       
-      {/* 
-        ========================================
+      {/* Absolute Header for Login */}
+      <div className="absolute top-6 right-12 z-50 hidden lg:flex items-center gap-6">
+        <Link to="/login" className="text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors">Sign In</Link>
+        <Link to="/register" className="bg-[#1B1E16] text-[#D1F55C] text-sm font-bold px-6 py-2 rounded-full hover:bg-black transition-colors shadow-md">
+          Create Account
+        </Link>
+      </div>
+
+      {/* ========================================
         LEFT SIDE: Dark Olive Background 
-        ========================================
-      */}
+      ======================================== */}
       <div className="w-full lg:w-[45%] flex flex-col justify-center px-6 py-16 lg:pl-16 lg:pr-8">
         
         {/* Brand Logo */}
@@ -47,15 +62,18 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* 
-        ========================================
+      {/* ========================================
         RIGHT SIDE: The Floating White App Interface 
-        ========================================
-      */}
-      {/* Notice I removed overflow-hidden here so the overlap box isn't cut off */}
+      ======================================== */}
       <div className="w-full lg:w-[55%] bg-white rounded-t-[3rem] lg:rounded-[3rem] shadow-2xl relative flex flex-col justify-center p-8 lg:p-12 xl:p-20 min-h-[700px]">
         
-        {/* THE OVERLAPPING STAT BOX (Moved here from the left) */}
+        {/* Mobile Login Links (Shows only on small screens) */}
+        <div className="flex lg:hidden justify-end mb-8 gap-4">
+           <Link to="/login" className="text-sm font-bold text-gray-500">Sign In</Link>
+           <Link to="/register" className="text-sm font-bold text-[#1B1E16]">Create Account</Link>
+        </div>
+
+        {/* THE OVERLAPPING STAT BOX */}
         <div className="hidden lg:flex absolute top-5 -left-6 bg-[#D1F55C] rounded-[2rem] px-10 py-8 shadow-2xl z-30 transform hover:scale-105 transition-transform cursor-default flex-col items-center justify-center">
           <div className="text-6xl font-black text-[#1B1E16] tracking-tight mb-2">130+</div>
           <div className="text-[#1B1E16] font-semibold text-lg tracking-wide">Jobs in Vault</div>
@@ -76,26 +94,23 @@ export default function Hero() {
           </p>
         </div>
 
-        {/* The Actual Content (Reduced max-width so it doesn't look gigantic) */}
-        <div className="relative z-10 max-w-lg mt-32 lg:mt-0 mx-auto lg:mx-0 lg:ml-12">
-          {/* Subtle Live Badge */}
+        {/* The Actual Content */}
+        <div className="relative z-10 max-w-lg mt-10 lg:mt-0 mx-auto lg:mx-0 lg:ml-12">
           <div className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold text-slate-500 bg-slate-50 border border-slate-200 mb-6 shadow-sm">
             2,886 open positions
           </div>
 
-          {/* Main Headline - Scaled down slightly for balance */}
           <h2 className="text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight mb-5 leading-[1.1]">
             Find your next <Sparkles className="inline-block w-8 h-8 text-[#FFD700] fill-[#FFD700] -mt-2 mx-1" /> <br/>
             exciting startup job
           </h2>
 
-          {/* Subheadline */}
           <p className="text-sm lg:text-base text-slate-500 mb-8 leading-relaxed font-medium">
-            Lorem ipsum dolor sit amet consectetur. Orci augue eu a et tincidunt. Fringilla tincidunt tempor euismod porttitor quis id ame.
+            Drop your resume. Let our AI parser extract your stack, experience, and instantly match you with highly-vetted startup roles.
           </p>
 
-          {/* The Search Bar - Sleeker and tighter padding */}
-          <div className="bg-white rounded-xl p-1.5 border border-slate-200 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] flex flex-col xl:flex-row items-center">
+          {/* Form wrapper added so hitting Enter works! */}
+          <form onSubmit={handleSearch} className="bg-white rounded-xl p-1.5 border border-slate-200 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] flex flex-col xl:flex-row items-center">
             <div className="flex-1 flex items-center px-3 py-3 xl:py-0 w-full xl:w-auto border-b xl:border-b-0 xl:border-r border-slate-100">
               <Search className="w-4 h-4 text-slate-400 mr-2 flex-shrink-0" />
               <input 
@@ -114,13 +129,12 @@ export default function Hero() {
               />
             </div>
 
-            <button className="w-full xl:w-auto mt-2 xl:mt-0 bg-[#2A2A2A] hover:bg-black text-white font-semibold px-8 py-3 rounded-lg transition-colors flex-shrink-0 text-sm">
+            <button type="submit" className="w-full xl:w-auto mt-2 xl:mt-0 bg-[#2A2A2A] hover:bg-black text-white font-semibold px-8 py-3 rounded-lg transition-colors flex-shrink-0 text-sm">
               Search
             </button>
-          </div>
+          </form>
         </div>
       </div>
-      
     </div>
   );
 }

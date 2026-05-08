@@ -19,14 +19,13 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      // Call our custom backend auth route
+
       const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
       
-      // Save the token to global state and localStorage
+
       login(res.data.token);
       
-      // Send them back to the previous page (like the Job Details they were just looking at!)
-      navigate(-1); 
+      navigate(-1); // Return to the page the user was on before login
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to login. Please check your credentials.');
     } finally {
@@ -37,7 +36,7 @@ export default function Login() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#FAFAFA] p-4 font-sans">
       
-      {/* Brand Header */}
+
       <Link to="/" className="flex items-center space-x-3 mb-8 cursor-pointer hover:opacity-80 transition-opacity">
         <div className="w-12 h-12 bg-[#D1F55C] rounded-xl flex items-center justify-center shadow-lg shadow-[#D1F55C]/20">
           <Megaphone className="w-6 h-6 text-[#1B1E16] fill-[#1B1E16]" />
@@ -45,7 +44,7 @@ export default function Login() {
         <span className="text-2xl font-black tracking-tight text-gray-900">CareerBridge</span>
       </Link>
 
-      {/* Login Card */}
+
       <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-8 border border-gray-100">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Welcome back</h2>

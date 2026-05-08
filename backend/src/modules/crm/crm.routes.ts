@@ -4,10 +4,10 @@ import { requireAuth } from '../../middleware/auth.middleware.js';
 
 const router = Router();
 
-// POST /api/crm/track - Create or update a tracked job
+// POST /api/crm/track — create or update a tracked job application
 router.post('/track', requireAuth, trackJobHandler);
 
-// GET /api/crm/pipeline - Get all tracked jobs for the logged-in user
+// GET /api/crm/pipeline — get all tracked jobs for the logged-in user
 router.get('/pipeline', requireAuth, getPipelineHandler);
 
 export default router;

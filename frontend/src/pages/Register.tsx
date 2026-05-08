@@ -5,13 +5,13 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
-  // --- Form State ---
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [otp, setOtp] = useState('');
   
-  // --- UI State ---
+
   const [step, setStep] = useState<1 | 2>(1); // Step 1: Register, Step 2: Verify OTP
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -19,9 +19,7 @@ export default function Register() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  // ==========================================
-  // PHASE 1: CREATE ACCOUNT & TRIGGER EMAIL
-  // ==========================================
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -34,10 +32,10 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      // Hits our updated backend to create the unverified user and send the email
+
       await axios.post('http://localhost:5000/api/auth/register', { email, password });
       
-      // Success! Move to the OTP screen
+
       setStep(2); 
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to register. Please try again.');
@@ -46,22 +44,20 @@ export default function Register() {
     }
   };
 
-  // ==========================================
-  // PHASE 2: SUBMIT OTP & LOG IN
-  // ==========================================
+
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
     try {
-      // Send the email and the 6-digit code to the verifier route
+
       const res = await axios.post('http://localhost:5000/api/auth/verify-otp', { email, otp });
       
-      // If successful, the backend gives us the JWT. Log them in!
+
       login(res.data.token);
       
-      // Send them to the homepage (or back to the job they were viewing)
+
       navigate(-1); 
     } catch (err: any) {
       setError(err.response?.data?.error || 'Invalid or expired code. Please try again.');
@@ -82,9 +78,7 @@ export default function Register() {
 
       <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-8 border border-gray-100 relative overflow-hidden">
         
-        {/* =========================================
-            STEP 1 UI: INITIAL REGISTRATION
-        ========================================== */}
+
         {step === 1 && (
           <div className="animate-in fade-in slide-in-from-left-4 duration-300">
             <div className="text-center mb-8">
@@ -159,9 +153,7 @@ export default function Register() {
           </div>
         )}
 
-        {/* =========================================
-            STEP 2 UI: OTP VERIFICATION
-        ========================================== */}
+
         {step === 2 && (
           <div className="animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="text-center mb-8">
@@ -188,7 +180,7 @@ export default function Register() {
                   required
                   maxLength={6}
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} // Only allows numbers
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                   className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl py-4 text-center text-3xl font-black tracking-[0.5em] focus:outline-none focus:border-[#1B1E16] focus:ring-1 focus:ring-[#1B1E16] transition-all"
                   placeholder="000000"
                 />

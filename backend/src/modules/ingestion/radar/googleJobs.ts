@@ -1,10 +1,7 @@
-// /src/modules/ingestion/radar/googleJobs.ts
-
 import axios from 'axios';
 import { pool } from '../../../config/db.js';
 import crypto from 'crypto';
 
-// 🧠 SMART EXPERIENCE PARSER
 function parseExperienceRequirements(jobDescription: string, jobTitle: string) {
   const text = (jobDescription || '').toLowerCase();
   const title = (jobTitle || '').toLowerCase();
@@ -31,7 +28,6 @@ function parseExperienceRequirements(jobDescription: string, jobTitle: string) {
     }
   }
   
-  // Title overrides
   if (!isSeniorRole && title.match(/(intern|fresher|entry level)/i)) {
       isFresherOk = true;
       if (extractedExperience === "Not Specified") extractedExperience = "Fresher / Entry Level";
@@ -82,14 +78,12 @@ export async function sweepGoogleJobs(searchQuery: string, maxPages: number = 5)
         let isRemote = false;
         let country = 'Unknown';
 
-        // 1. Check for Remote Status
         if (locationString.includes('remote') || 
             locationString.includes('anywhere') || 
             titleString.includes('remote')) {
           isRemote = true;
         }
 
-        // 2. Detect Country (India Focus)
         if (locationString.includes('india') || locationString.includes('ind') || 
             locationString.includes('bengaluru') || locationString.includes('bangalore') || 
             locationString.includes('mumbai') || locationString.includes('delhi') || 
@@ -98,15 +92,13 @@ export async function sweepGoogleJobs(searchQuery: string, maxPages: number = 5)
           country = 'India';
         }
 
-        // 3. THE BOUNCER: Strict India/Remote check
+        // Only ingest India-based or remote roles
         if (isRemote || country === 'India') {
           const applyLink = job.apply_options?.[0]?.link || job.share_link || 'https://google.com/jobs';
           const rawId = job.job_id || `${job.title}-${job.company_name}`;
           const safeHash = crypto.createHash('sha256').update(rawId).digest('hex').substring(0, 16);
 
           const logoUrl = job.thumbnail || null;
-          
-          // --- THE SMART PARSER ---
           const { experienceString, fresherOk } = parseExperienceRequirements(job.description || '', job.title || '');
 
           let salaryRange = null;

@@ -1,5 +1,3 @@
-// /src/modules/ingestion/radar/cron.ts
-
 import cron from 'node-cron';
 import { db } from '../../../config/db.js';
 import { targetCompanies } from '../../../shared/schema.js';
@@ -10,10 +8,7 @@ import { sweepGoogleJobs } from './googleJobs.js';
 import { cleanVault } from '../../../scripts/janitor.js';
 
 export function startRadarCron() {
-  // ========================================================
-  // 1. THE DAILY ATS SWEEP (Every night at 2:00 AM)
-  // ========================================================
-  // '0 2 * * *' means: Minute 0, Hour 2 (2:00 AM), Every single day.
+  // Daily ATS Sweep: 2:00 AM — scans Greenhouse + Lever for all active target companies
   cron.schedule('0 2 * * *', async () => {
     console.log('\n[CRON] ⏰ Waking up Direct ATS Radar at 2:00 AM...');
     console.log('\n[CRON] ⏰ Triggering Database Janitor...');
@@ -32,13 +27,10 @@ export function startRadarCron() {
       }
 
       for (const target of targets) {
-        // 1. Try Greenhouse
         await ingestGreenhouseJobs(target.boardToken, target.name);
-        
-        // 2. Try Lever (Updated to match our new signature!)
         await sweepLever(target.name, target.boardToken);
         
-        // 3. The Neon Safety Valve (3 seconds to prevent ETIMEDOUT crashes)
+        // 3s pause between companies to prevent Neon ETIMEDOUT crashes
         await new Promise(resolve => setTimeout(resolve, 3000));
       }
 
@@ -50,15 +42,11 @@ export function startRadarCron() {
   });
 
 
-  // ========================================================
-  // 2. THE WEEKLY GOOGLE SWEEP (Every Sunday at 3:00 AM)
-  // ========================================================
-  // '0 3 * * 0' means: Minute 0, Hour 3 (3:00 AM), Day of Week 0 (Sunday).
+  // Weekly Google Sweep: Sundays at 3:00 AM — broad city-specific tech job searches
   cron.schedule('0 3 * * 0', async () => {
     console.log('\n[CRON] ⏰ Waking up Google Jobs Radar for WEEKLY sweep...');
 
     try {
-      // Launching our broad, city-specific tech sweeps
       await sweepGoogleJobs('Software Engineer Bangalore', 10);
       await sweepGoogleJobs('Full Stack Developer Pune', 10);
       await sweepGoogleJobs('Frontend Developer Hyderabad', 10);
@@ -71,8 +59,6 @@ export function startRadarCron() {
     }
   });
 
-
-  // Status log so you know it booted up properly
   console.log('⏱️ Radar Cron Engine Initialized:');
   console.log('   -> 🏢 Daily ATS Sweep: 2:00 AM');
   console.log('   -> 🌐 Weekly Google Sweep: Sundays at 3:00 AM');

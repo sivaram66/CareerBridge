@@ -18,5 +18,4 @@ pool.on('error', (err) => {
   process.exit(-1);
 });
 
-// Wrap your Neon pool with Drizzle
 export const db = drizzle(pool, { schema });

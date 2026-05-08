@@ -1,5 +1,3 @@
-// /src/modules/ai-summarizer/ai.service.ts
-
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 import dotenv from 'dotenv';
 
@@ -8,7 +6,6 @@ dotenv.config();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
 
 export const analyzeJobMatch = async (jobTitle: string, jobCompany: string, jobDescription: string, userProfile: string) => {
-  // Force Gemini to return perfect JSON without any markdown formatting
   const schema = {
     type: SchemaType.OBJECT,
     properties: {
@@ -63,7 +60,6 @@ export const analyzeJobMatch = async (jobTitle: string, jobCompany: string, jobD
 
   try {
     const result = await model.generateContent(prompt);
-    // Because we used SchemaType, we can confidently parse it directly!
     return JSON.parse(result.response.text());
   } catch (error) {
     console.error('AI Match Error:', error);

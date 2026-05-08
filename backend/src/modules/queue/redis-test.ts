@@ -13,16 +13,12 @@ async function testConnection() {
   console.log('🔌 Attempting to connect to Redis...');
   
   try {
-    // 1. Write a test message to the Redis database
     await redis.set('radar_status', 'Redis Queue is fully operational!');
-    
-    // 2. Read the message back
     const result = await redis.get('radar_status');
     
     console.log('✅ Connection Success!');
     console.log(`Message from Redis: ${result}`);
     
-    // 3. Close the connection gracefully
     redis.disconnect();
     process.exit(0);
   } catch (error) {
