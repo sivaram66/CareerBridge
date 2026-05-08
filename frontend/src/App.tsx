@@ -4,6 +4,7 @@ import JobsExplorer from './pages/JobsExplorer';
 import JobDetails from './pages/JobDetails'; 
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Profile from './pages/Profile';
 function App() {
   return (
     <Router>
@@ -19,6 +20,7 @@ function App() {
 
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
         </main>
       </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Clock, Building, ChevronDown, Megaphone, Star } from 'lucide-react';
+import { Search, MapPin, Clock, Building, ChevronDown, Megaphone, Star, User } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import apiClient from '../api/axios';
 import { Link } from 'react-router-dom';
 
@@ -89,6 +90,7 @@ export default function JobsExplorer() {
   const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>([]);
   const [selectedExperience, setSelectedExperience] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState("All");
+  const { isAuthenticated } = useAuth();
   useEffect(() => {
     const fetchJobs = async () => {
       try {
@@ -200,7 +202,15 @@ export default function JobsExplorer() {
               <span className="hover:text-[#D1F55C] cursor-pointer transition-colors">Companies</span>
               <span className="hover:text-[#D1F55C] cursor-pointer transition-colors">Salaries</span>
               <div className="h-4 w-px bg-gray-700"></div>
-              <button className="text-white hover:text-gray-300 transition-colors">Sign In</button>
+              
+              {isAuthenticated ? (
+                <Link to="/profile" className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center border-2 border-gray-700 hover:border-[#D1F55C] transition-all overflow-hidden">
+                  <User className="w-5 h-5 text-gray-300" />
+                </Link>
+              ) : (
+                <Link to="/login" className="text-white hover:text-gray-300 transition-colors font-medium">Sign In</Link>
+              )}
+
               <button className="bg-[#D1F55C] text-[#1B1E16] font-bold px-5 py-2.5 rounded-lg hover:bg-[#bce63c] transition-colors shadow-lg shadow-[#D1F55C]/10">
                 Post a Job
               </button>
