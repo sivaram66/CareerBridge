@@ -14,13 +14,7 @@ export default function Hero() {
   return (
     <div className="min-h-screen bg-[#1B1E16] flex flex-col lg:flex-row p-0 lg:p-6 lg:pr-8 gap-8 items-stretch relative">
       
-      {/* Absolute Header for Login */}
-      <div className="absolute top-6 right-12 z-50 hidden lg:flex items-center gap-6">
-        <Link to="/login" className="text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors">Sign In</Link>
-        <Link to="/register" className="bg-[#1B1E16] text-[#D1F55C] text-sm font-bold px-6 py-2 rounded-full hover:bg-black transition-colors shadow-md">
-          Create Account
-        </Link>
-      </div>
+      
 
       {/* ========================================
         LEFT SIDE: Dark Olive Background 
@@ -64,9 +58,20 @@ export default function Hero() {
 
       {/* ========================================
         RIGHT SIDE: The Floating White App Interface 
-      ======================================== */}
+        ========================================
+      */}
       <div className="w-full lg:w-[55%] bg-white rounded-t-[3rem] lg:rounded-[3rem] shadow-2xl relative flex flex-col justify-center p-8 lg:p-12 xl:p-20 min-h-[700px]">
         
+        {/* DESKTOP AUTH - Perfectly aligned inside the white box */}
+        <div className="absolute top-8 right-8 lg:top-10 lg:right-12 z-50 hidden lg:flex items-center gap-6">
+          <Link to="/login" className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors">
+            Sign In
+          </Link>
+          <Link to="/register" className="bg-[#1B1E16] text-[#D1F55C] text-sm font-bold px-7 py-2.5 rounded-full hover:bg-black transition-all shadow-lg shadow-black/5 hover:-translate-y-0.5">
+            Create Account
+          </Link>
+        </div>
+
         {/* Mobile Login Links (Shows only on small screens) */}
         <div className="flex lg:hidden justify-end mb-8 gap-4">
            <Link to="/login" className="text-sm font-bold text-gray-500">Sign In</Link>
