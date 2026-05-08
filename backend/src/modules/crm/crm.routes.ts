@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { trackJobHandler, getPipelineHandler } from './crm.controller.js';
-import { requireAuth } from '../../shared/middleware/auth.middleware.js';
+import { requireAuth } from '../../middleware/auth.middleware.js';
 
 const router = Router();
 

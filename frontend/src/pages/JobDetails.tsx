@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Star, Sparkles, CheckCircle2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext'; // Adjust path if needed
 
 export default function JobDetails() {
   const { id } = useParams();
   const [job, setJob] = useState<any>(null);
   const [aiData, setAiData] = useState<any>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  
+  const { isAuthenticated } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
   const [userProfile, setUserProfile] = useState("Software Developer based in India focused on backend engineering. Tech stack: Node.js, Express.js, Next.js. Experience with Neon PostgreSQL, Drizzle ORM, microservices architecture, and building event-driven AI workflow orchestrators.");
 
   useEffect(() => {
@@ -26,54 +29,16 @@ export default function JobDetails() {
     setIsAnalyzing(false);
   };
 
-  // 🧠 SMART FORMATTER: Now removes numbers and forces hard line breaks!
+  // 🧠 LIGHTWEIGHT SANITIZER: Keeps the original structure, just decodes HTML safely
   const formatJobDescription = (text: string) => {
     if (!text) return '';
-
     const txt = document.createElement("textarea");
     txt.innerHTML = text;
     let formatted = txt.value;
-
-    const headings = [
-      "About the internship:", "Who can apply:", "Stipend:", "Deadline:", 
-      "Other perks:", "Skills required:", "Other Requirements:", 
-      "About Company:", "Additional information:", "Selected intern's day-to-day responsibilities include:"
-    ];
-
-    // 1. FORMAT HEADINGS
-    headings.forEach(heading => {
-      const safeHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp(`(${safeHeading})`, 'gi');
-      
-      // Clean, professional headings
-      formatted = formatted.replace(regex, `<h3 class="font-semibold text-lg text-gray-900 mt-8 mb-4 border-b border-gray-100 pb-2 block">$1</h3>`);
-    });
-
-    // 2. FORCE LINE BREAKS & REMOVE NUMBERS
-    // This finds any combination of words, bullet points (•), and numbers (like "layouts • 2. Develop")
-    // It breaks the line, deletes the "• 2.", and injects our custom indigo dot.
-    formatted = formatted.replace(
-      /([a-zA-Z>])?\s*(?:•|\*|·)?\s*(\d+)\.\s/g, 
-      (match, p1) => {
-        // If there's a letter right before the number, keep it and add double line breaks
-        const prefix = p1 ? `${p1}<br/><br/>` : '<br/><br/>';
-        return `${prefix}<span class="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500 align-middle mr-3 shrink-0"></span>`;
-      }
-    );
-
-    // 3. UN-MASH INTERNSHALA TEXT BULLETS
-    formatted = formatted.replace(
-      /([a-z0-9'\]])\s*(are available|can start|have relevant|are Computer|Only those|\* Women wanting)/gi, 
-      (match, p1, p2) => {
-        const cleanText = p2.replace('* ', ''); // Clean up stray asterisks
-        return `${p1}<br/><br/><span class="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500 align-middle mr-3 shrink-0"></span>${cleanText}`;
-      }
-    );
-
-    // Clean up empty lines at the start, and remove extra breaks right after a heading
-    formatted = formatted.replace(/^(<br\/>|\s)+/, '');
-    formatted = formatted.replace(/<\/h3>(<br\/>|\s)+/g, '</h3>');
-
+    
+    // Simply clean up excessive blank lines to keep the UI tight
+    formatted = formatted.replace(/\n{3,}/g, '\n\n');
+    
     return formatted;
   };
 
@@ -135,14 +100,19 @@ export default function JobDetails() {
               </div>
 
               <div className="flex items-center gap-3 w-full md:w-auto">
-                <a 
-                  href={job.applyUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
+                <button 
+                  onClick={(e) => {
+                    if (!isAuthenticated) {
+                      e.preventDefault();
+                      setShowAuthModal(true); // Show modal if logged out
+                    } else {
+                      window.open(job.applyUrl, '_blank', 'noopener,noreferrer'); // Open link if logged in
+                    }
+                  }}
                   className="flex-1 md:flex-none text-center bg-[#c2e434] text-[#1B1E16] px-8 py-3 rounded-xl font-bold hover:bg-[#b0d02b] transition-colors shadow-sm"
                 >
                   Apply now
-                </a>
+                </button>
                 <button className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold hover:bg-gray-50 transition-colors shadow-sm bg-white">
                   <Star className="w-4 h-4" />
                   Save role
@@ -196,7 +166,14 @@ export default function JobDetails() {
                     onChange={(e) => setUserProfile(e.target.value)}
                   />
                   <button 
-                    onClick={runAiAnalysis}
+                    onClick={(e) => {
+                      if (!isAuthenticated) {
+                        e.preventDefault();
+                        setShowAuthModal(true); // Show modal if logged out
+                      } else {
+                        runAiAnalysis(); // Run AI if logged in
+                      }
+                    }}
                     disabled={isAnalyzing}
                     className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all disabled:opacity-70 flex items-center gap-2 shadow-sm"
                   >
@@ -240,13 +217,29 @@ export default function JobDetails() {
               </div>
             )}
 
-            {/* THE RAW DESCRIPTION */}
+            {/* THE RAW DESCRIPTION (Styled via Tailwind Prose) */}
             <div>
               <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">About the Role</h2>
               
               <div 
                 className="prose prose-gray max-w-none text-[15px] leading-relaxed text-gray-600 
-                prose-a:text-indigo-600 prose-a:no-underline hover:prose-a:underline"
+                
+                /* Standardize Native HTML Headings */
+                prose-headings:font-bold prose-headings:text-gray-900 prose-headings:mt-8 prose-headings:mb-4
+                prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg
+                
+                /* If companies use bold tags for headings, make them look nice */
+                prose-strong:font-semibold prose-strong:text-gray-900 
+                
+                /* List Styling */
+                prose-ul:my-4 prose-li:my-1
+                
+                /* Link Styling */
+                prose-a:text-indigo-600 prose-a:no-underline hover:prose-a:underline
+                
+                /* MAGIC RULE: If it's pure raw text with no HTML tags, this forces line breaks to render properly */
+                whitespace-pre-line"
+
                 dangerouslySetInnerHTML={{ __html: formatJobDescription(job.description) }} 
               />
             </div>
@@ -299,35 +292,51 @@ export default function JobDetails() {
               </div>
             </div>
 
-            <div>
-              <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Similar Roles</h2>
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-gray-100">
-                  <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">
-                    SE
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900 text-sm">Software Engineer</div>
-                    <div className="text-xs text-gray-500">TechCorp · Remote</div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-gray-100">
-                  <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">
-                    FE
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900 text-sm">Frontend Developer</div>
-                    <div className="text-xs text-gray-500">Innovate · Bangalore</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
           </div>
         </div>
 
       </div>
+      {/* =========================================
+          4. THE AUTH INTERCEPTION MODAL
+      ========================================== */}
+      {showAuthModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 relative animate-in fade-in zoom-in-95 duration-200">
+            
+            {/* Close Button */}
+            <button 
+              onClick={() => setShowAuthModal(false)}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors"
+            >
+              ✕
+            </button>
+
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-[#D1F55C] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#D1F55C]/20">
+                <Star className="w-8 h-8 text-[#1B1E16] fill-[#1B1E16]" />
+              </div>
+              <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Unlock CareerBridge</h2>
+              <p className="text-gray-500 font-medium">Sign in to apply for roles, generate AI summaries, and save jobs to your board.</p>
+            </div>
+
+            <div className="space-y-4">
+              <Link 
+                to="/login"
+                className="w-full block text-center bg-[#1B1E16] text-[#D1F55C] font-bold py-3.5 rounded-xl hover:bg-black transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link 
+                to="/register"
+                className="w-full block text-center bg-white border-2 border-gray-200 text-gray-700 font-bold py-3.5 rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-colors"
+              >
+                Create an Account
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+    
   );
 }

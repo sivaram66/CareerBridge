@@ -9,15 +9,49 @@ interface GreenhouseJob {
   absolute_url: string;
   location: { name: string };
   departments?: { name: string }[];
-  content?: string; // We will force Greenhouse to give us this
-  updated_at: string; // Internal freshness timestamp
+  content?: string; 
+  updated_at: string; 
+}
+
+// 🧠 SMART EXPERIENCE PARSER
+function parseExperienceRequirements(jobDescription: string, jobTitle: string) {
+  const text = (jobDescription || '').toLowerCase();
+  const title = (jobTitle || '').toLowerCase();
+
+  let extractedExperience = "Not Specified";
+  let isFresherOk = false;
+
+  const isSeniorRole = title.match(/(senior|sr|lead|staff|principal|manager|head|director)/i);
+  const expRegex = /(\d+)\s*(?:\+|-|to)?\s*(\d+)?\s*(?:\+)?\s*(years?|yrs?)\s*(?:of\s*)?experience/i;
+  const match = text.match(expRegex);
+
+  if (match) {
+    extractedExperience = match[0];
+    const minYears = parseInt(match[1]);
+    if (minYears === 0 && !isSeniorRole) {
+      isFresherOk = true;
+    } else {
+      isFresherOk = false;
+    }
+  } else {
+    if (!isSeniorRole && text.match(/(fresher|entry-level|entry level|new grad|0 years|recent graduate)/i)) {
+      isFresherOk = true;
+      extractedExperience = "Fresher / Entry Level";
+    }
+  }
+
+  if (!isSeniorRole && title.match(/(intern|fresher|entry level)/i)) {
+      isFresherOk = true;
+      if (extractedExperience === "Not Specified") extractedExperience = "Fresher / Entry Level";
+  }
+
+  return { experienceString: extractedExperience, fresherOk: isFresherOk };
 }
 
 export async function ingestGreenhouseJobs(boardToken: string, companyName: string) {
   console.log(`\n[RADAR - GREENHOUSE] 📡 Scanning: ${companyName} (${boardToken})`);
 
   try {
-    // 1. Force the API to give us the full descriptions (?content=true)
     const response = await fetch(`https://boards-api.greenhouse.io/v1/boards/${boardToken}/jobs?content=true`);
     
     if (!response.ok) {
@@ -33,23 +67,19 @@ export async function ingestGreenhouseJobs(boardToken: string, companyName: stri
     }
 
     const jobsToInsert: any[] = [];
-    
-    // Calculate the cutoff date (45 days ago)
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - 45);
+
+    // DIVERSITY CAP LIMIT
+    const MAX_JOBS_PER_COMPANY = 5;
 
     for (const job of rawJobs) {
       const titleString = (job.title || '').toLowerCase();
       const locationString = (job.location?.name || '').toLowerCase();
-      const descString = (job.content || '').toLowerCase();
       
-      // --- THE FRESHNESS BOUNCER ---
       const jobDate = new Date(job.updated_at);
-      if (jobDate < cutoffDate) {
-        continue; // Job is too old, drop it silently
-      }
+      if (jobDate < cutoffDate) continue;
 
-      // --- THE TECH BOUNCER ---
       const isTechRole = 
         titleString.includes('engineer') || titleString.includes('developer') || 
         titleString.includes('software') || titleString.includes('data') || 
@@ -59,9 +89,7 @@ export async function ingestGreenhouseJobs(boardToken: string, companyName: stri
         titleString.includes('ai ') || titleString.includes('machine learning') ||
         titleString.includes('sde');
 
-      if (!isTechRole) {
-        continue; // Not a tech role, drop it silently
-      }
+      if (!isTechRole) continue;
 
       let isRemote = false;
       let country = 'Unknown';
@@ -78,15 +106,8 @@ export async function ingestGreenhouseJobs(boardToken: string, companyName: stri
         country = 'India';
       }
 
-      // --- THE ULTIMATE FRESHER DETECTOR ---
-      const isFresherOk = 
-        titleString.includes('intern') || titleString.includes('fresher') || 
-        titleString.includes('entry level') || titleString.includes('sde 1') || 
-        titleString.includes('sde i') || titleString.includes('associate') || 
-        descString.includes('0 years') || descString.includes('0-1 years') ||
-        descString.includes('recent graduate') || descString.includes('university grad');
+      const { experienceString, fresherOk } = parseExperienceRequirements(job.content || '', job.title || '');
 
-      // --- THE LOCATION BOUNCER ---
       if (isRemote || country === 'India') {
         jobsToInsert.push({
           externalJobId: `greenhouse-${job.id}`,
@@ -97,9 +118,16 @@ export async function ingestGreenhouseJobs(boardToken: string, companyName: stri
           isRemote: isRemote,
           country: country,
           applyUrl: job.absolute_url,
-          fresherOk: isFresherOk,
-          isFeatured: true // Let's auto-feature these since they are premium ATS jobs!
+          experience: experienceString,
+          fresherOk: fresherOk,
+          isFeatured: true 
         });
+
+        // 🛑 THE DIVERSITY CAP CHECK
+        if (jobsToInsert.length >= MAX_JOBS_PER_COMPANY) {
+          console.log(`[RADAR] 🛑 Diversity Cap Reached: Stopping at ${MAX_JOBS_PER_COMPANY} jobs for ${companyName}.`);
+          break; // Exit the loop entirely
+        }
       }
     }
 
@@ -120,7 +148,6 @@ export async function ingestGreenhouseJobs(boardToken: string, companyName: stri
 
   } catch (error: any) {
     if (error.message.includes('404')) {
-      // Don't clutter logs with 404s, it just means they don't use Greenhouse
     } else {
       console.error(`[RADAR] ❌ Mission Failed for ${companyName}:`, error.message);
     }

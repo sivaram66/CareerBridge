@@ -4,6 +4,42 @@ import axios from 'axios';
 import { pool } from '../../../config/db.js';
 import crypto from 'crypto';
 
+// 🧠 SMART EXPERIENCE PARSER
+function parseExperienceRequirements(jobDescription: string, jobTitle: string) {
+  const text = (jobDescription || '').toLowerCase();
+  const title = (jobTitle || '').toLowerCase();
+
+  let extractedExperience = "Not Specified";
+  let isFresherOk = false;
+
+  const isSeniorRole = title.match(/(senior|sr|lead|staff|principal|manager|head|director)/i);
+  const expRegex = /(\d+)\s*(?:\+|-|to)?\s*(\d+)?\s*(?:\+)?\s*(years?|yrs?)\s*(?:of\s*)?experience/i;
+  const match = text.match(expRegex);
+
+  if (match) {
+    extractedExperience = match[0];
+    const minYears = parseInt(match[1]);
+    if (minYears === 0 && !isSeniorRole) {
+      isFresherOk = true;
+    } else {
+      isFresherOk = false;
+    }
+  } else {
+    if (!isSeniorRole && text.match(/(fresher|entry-level|entry level|new grad|0 years|recent graduate)/i)) {
+      isFresherOk = true;
+      extractedExperience = "Fresher / Entry Level";
+    }
+  }
+  
+  // Title overrides
+  if (!isSeniorRole && title.match(/(intern|fresher|entry level)/i)) {
+      isFresherOk = true;
+      if (extractedExperience === "Not Specified") extractedExperience = "Fresher / Entry Level";
+  }
+
+  return { experienceString: extractedExperience, fresherOk: isFresherOk };
+}
+
 export async function sweepGoogleJobs(searchQuery: string, maxPages: number = 5) {
   const apiKey = process.env.SERPAPI_KEY;
   
@@ -42,7 +78,6 @@ export async function sweepGoogleJobs(searchQuery: string, maxPages: number = 5)
       for (const job of rawJobs) {
         const locationString = (job.location || '').toLowerCase();
         const titleString = (job.title || '').toLowerCase();
-        const descString = (job.description || '').toLowerCase();
         
         let isRemote = false;
         let country = 'Unknown';
@@ -69,23 +104,13 @@ export async function sweepGoogleJobs(searchQuery: string, maxPages: number = 5)
           const rawId = job.job_id || `${job.title}-${job.company_name}`;
           const safeHash = crypto.createHash('sha256').update(rawId).digest('hex').substring(0, 16);
 
-          // --- NEW: ADVANCED DATA EXTRACTION ---
-
-          // Logo is usually returned as 'thumbnail' by SerpApi
           const logoUrl = job.thumbnail || null;
+          
+          // --- THE SMART PARSER ---
+          const { experienceString, fresherOk } = parseExperienceRequirements(job.description || '', job.title || '');
 
-          // Fresher Check (Hunting for keywords in title and description)
-          const isFresherOk = titleString.includes('intern') || 
-                              titleString.includes('fresher') || 
-                              titleString.includes('entry level') || 
-                              descString.includes('0 years') || 
-                              descString.includes('0-1 years') ||
-                              descString.includes('recent graduate');
-
-          // Salary Extraction (SerpApi usually puts this in the 'extensions' array)
           let salaryRange = null;
           if (job.extensions && Array.isArray(job.extensions)) {
-            // Look for strings containing currency or salary keywords
             const salaryExt = job.extensions.find((ext: string) => 
               ext.includes('₹') || ext.includes('$') || ext.includes('a year') || ext.includes('a month')
             );
@@ -102,9 +127,10 @@ export async function sweepGoogleJobs(searchQuery: string, maxPages: number = 5)
             country: country,
             apply_url: applyLink,
             logo_url: logoUrl,
-            fresher_ok: isFresherOk,
+            experience: experienceString,
+            fresher_ok: fresherOk,
             salary_range: salaryRange,
-            is_featured: false // Defaults to false. Can be upgraded later!
+            is_featured: false
           });
         }
       }
@@ -112,21 +138,20 @@ export async function sweepGoogleJobs(searchQuery: string, maxPages: number = 5)
       if (jobsToInsert.length > 0) {
         for (const job of jobsToInsert) {
           try {
-            // --- NEW: UPDATED SQL INSERT QUERY ---
             await pool.query(
               `INSERT INTO jobs (
                 external_job_id, company_name, title, location, description, 
-                is_remote, country, apply_url, logo_url, fresher_ok, salary_range, is_featured
-              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+                is_remote, country, apply_url, logo_url, experience, fresher_ok, salary_range, is_featured
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
               ON CONFLICT (external_job_id) DO NOTHING`,
               [
                 job.external_job_id, job.company_name, job.title, job.location, job.description, 
-                job.is_remote, job.country, job.apply_url, job.logo_url, job.fresher_ok, job.salary_range, job.is_featured
+                job.is_remote, job.country, job.apply_url, job.logo_url, job.experience, job.fresher_ok, job.salary_range, job.is_featured
               ]
             );
             totalInjectedForQuery++;
           } catch (dbError) {
-             // Silently ignore duplicates
+             console.error(`[DB ERROR]:`, dbError.message);
           }
         }
         console.log(`[RADAR] 📄 Page ${page + 1}: Injected ${jobsToInsert.length} valid jobs.`);

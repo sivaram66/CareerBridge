@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import { registerUserHandler, loginUserHandler } from './auth.controller.js';
+import { register, login, verifyOtp } from './auth.controller.js';
 
 const router = Router();
 
-// POST /api/auth/register
-router.post('/register', registerUserHandler);
-
-// POST /api/auth/login
-router.post('/login', loginUserHandler);
+router.post('/register', register);
+router.post('/login', login);
+router.post('/register', register);
+router.post('/verify-otp', verifyOtp);
+router.post('/login', login);
 
 export default router;

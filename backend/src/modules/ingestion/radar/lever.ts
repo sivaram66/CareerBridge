@@ -3,6 +3,41 @@
 import axios from 'axios';
 import { pool } from '../../../config/db.js';
 
+// 🧠 SMART EXPERIENCE PARSER
+function parseExperienceRequirements(jobDescription: string, jobTitle: string) {
+  const text = (jobDescription || '').toLowerCase();
+  const title = (jobTitle || '').toLowerCase();
+
+  let extractedExperience = "Not Specified";
+  let isFresherOk = false;
+
+  const isSeniorRole = title.match(/(senior|sr|lead|staff|principal|manager|head|director)/i);
+  const expRegex = /(\d+)\s*(?:\+|-|to)?\s*(\d+)?\s*(?:\+)?\s*(years?|yrs?)\s*(?:of\s*)?experience/i;
+  const match = text.match(expRegex);
+
+  if (match) {
+    extractedExperience = match[0];
+    const minYears = parseInt(match[1]);
+    if (minYears === 0 && !isSeniorRole) {
+      isFresherOk = true;
+    } else {
+      isFresherOk = false;
+    }
+  } else {
+    if (!isSeniorRole && text.match(/(fresher|entry-level|entry level|new grad|0 years|recent graduate)/i)) {
+      isFresherOk = true;
+      extractedExperience = "Fresher / Entry Level";
+    }
+  }
+
+  if (!isSeniorRole && title.match(/(intern|fresher|entry level)/i)) {
+      isFresherOk = true;
+      if (extractedExperience === "Not Specified") extractedExperience = "Fresher / Entry Level";
+  }
+
+  return { experienceString: extractedExperience, fresherOk: isFresherOk };
+}
+
 export async function sweepLever(companyName: string, boardToken: string) {
   try {
     const url = `https://api.lever.co/v0/postings/${boardToken}?mode=json`;
@@ -20,17 +55,18 @@ export async function sweepLever(companyName: string, boardToken: string) {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - 45); // 45 days ago
 
+    // DIVERSITY CAP LIMIT
+    const MAX_JOBS_PER_COMPANY = 5;
+
     for (const job of rawJobs) {
       const titleString = (job.text || '').toLowerCase();
       const locationString = (job.categories?.location || '').toLowerCase();
       const commitmentString = (job.categories?.commitment || '').toLowerCase();
-      const descString = (job.descriptionPlain || job.description || '').toLowerCase();
+      const descString = (job.descriptionPlain || job.description || '');
       
-      // --- THE FRESHNESS BOUNCER ---
       const jobDate = new Date(job.createdAt);
       if (jobDate < cutoffDate) continue;
 
-      // --- THE TECH BOUNCER ---
       const isTechRole = 
         titleString.includes('engineer') || titleString.includes('developer') || 
         titleString.includes('software') || titleString.includes('data') || 
@@ -58,13 +94,7 @@ export async function sweepLever(companyName: string, boardToken: string) {
         country = 'India';
       }
 
-      // --- THE ULTIMATE FRESHER DETECTOR ---
-      const isFresherOk = 
-        titleString.includes('intern') || titleString.includes('fresher') || 
-        titleString.includes('entry level') || titleString.includes('sde 1') || 
-        titleString.includes('sde i') || titleString.includes('associate') || 
-        descString.includes('0 years') || descString.includes('0-1 years') ||
-        descString.includes('recent graduate') || descString.includes('university grad');
+      const { experienceString, fresherOk } = parseExperienceRequirements(descString, job.text || '');
 
       if (isRemote || country === 'India') {
         jobsToInsert.push({
@@ -76,9 +106,16 @@ export async function sweepLever(companyName: string, boardToken: string) {
           is_remote: isRemote,
           country: country,
           apply_url: job.hostedUrl, 
-          fresher_ok: isFresherOk,
-          is_featured: true // Auto-feature premium jobs
+          experience: experienceString,
+          fresher_ok: fresherOk,
+          is_featured: true 
         });
+
+        // 🛑 THE DIVERSITY CAP CHECK
+        if (jobsToInsert.length >= MAX_JOBS_PER_COMPANY) {
+          console.log(`[RADAR] 🛑 Diversity Cap Reached: Stopping at ${MAX_JOBS_PER_COMPANY} jobs for ${companyName}.`);
+          break; // Exit the loop entirely
+        }
       }
     }
 
@@ -92,10 +129,10 @@ export async function sweepLever(companyName: string, boardToken: string) {
     for (const job of jobsToInsert) {
       try {
         await pool.query(
-          `INSERT INTO jobs (external_job_id, company_name, title, location, description, is_remote, country, apply_url, fresher_ok, is_featured) 
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+          `INSERT INTO jobs (external_job_id, company_name, title, location, description, is_remote, country, apply_url, experience, fresher_ok, is_featured) 
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
            ON CONFLICT (external_job_id) DO NOTHING`,
-          [job.external_job_id, job.company_name, job.title, job.location, job.description, job.is_remote, job.country, job.apply_url, job.fresher_ok, job.is_featured]
+          [job.external_job_id, job.company_name, job.title, job.location, job.description, job.is_remote, job.country, job.apply_url, job.experience, job.fresher_ok, job.is_featured]
         );
       } catch (dbError) {
          // Silently ignore duplicates
@@ -106,7 +143,6 @@ export async function sweepLever(companyName: string, boardToken: string) {
 
   } catch (error: any) {
     if (error.response?.status === 404) {
-      // Silently ignore, means they don't use Lever
     } else {
       console.error(`[RADAR] 🚨 Error scraping Lever for ${companyName}:`, error.message);
     }

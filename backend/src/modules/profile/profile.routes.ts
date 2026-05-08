@@ -1,11 +1,16 @@
 import { Router } from 'express';
-import { updateProfileHandler } from './profile.controller.js';
-import { requireAuth } from '../../shared/middleware/auth.middleware.js';
+import { getMyProfile, updateMyProfile } from './profile.controller.js';
+import { requireAuth } from '../../middleware/auth.middleware.js';
 
 const router = Router();
 
+// 🛡️ Apply the Security Guard to all profile routes
+router.use(requireAuth);
+
+// GET /api/profile
+router.get('/', getMyProfile);
+
 // PUT /api/profile
-// Notice we put `requireAuth` in the middle! This acts as a bouncer.
-router.put('/', requireAuth, updateProfileHandler);
+router.put('/', updateMyProfile);
 
 export default router;

@@ -71,6 +71,16 @@ interface Job {
   createdAt?: string;
 }
 
+// 🧠 SMART CATEGORY MAP
+const CATEGORY_MAP: Record<string, string[]> = {
+  "All": [],
+  "Frontend": ["frontend", "react", "vue", "angular", "ui", "ux", "web", "next.js"],
+  "Backend": ["backend", "node", "java", "python", "golang", "ruby", "django", "spring"],
+  "Full Stack": ["full stack", "fullstack", "mern", "mean", "software engineer", "sde"],
+  "Data & AI": ["data", "ai", "machine learning", "ml", "nlp", "scientist"],
+  "DevOps & Cloud": ["devops", "aws", "cloud", "azure", "docker", "kubernetes"],
+};
+
 export default function JobsExplorer() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,6 +88,7 @@ export default function JobsExplorer() {
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>([]);
   const [selectedExperience, setSelectedExperience] = useState<string[]>([]);
+  const [activeCategory, setActiveCategory] = useState("All");
   useEffect(() => {
     const fetchJobs = async () => {
       try {
@@ -152,6 +163,14 @@ export default function JobsExplorer() {
       if (selectedExperience.includes('Entry Level') && !job.fresherOk) return false;
       // If they want Mid/Senior, the job MUST NOT be a fresher role
       if (selectedExperience.includes('Mid/Senior Level') && job.fresherOk) return false;
+    }
+
+    // 4. Category Pill Match
+    if (activeCategory !== "All") {
+      const keywords = CATEGORY_MAP[activeCategory];
+      const title = (job.title || '').toLowerCase();
+      const matchesCategory = keywords.some(keyword => title.includes(keyword));
+      if (!matchesCategory) return false;
     }
 
     return true; // If it passes all active filters, show it!
@@ -306,6 +325,22 @@ export default function JobsExplorer() {
                 Sort by: <span className="text-black">Most relevant</span>
                 <ChevronDown className="w-4 h-4" />
               </div>
+            </div>
+            {/* Category Filter Pills (Horizontal) */}
+            <div className="flex overflow-x-auto pb-4 hide-scrollbar w-full gap-2 mb-2">
+              {Object.keys(CATEGORY_MAP).map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setActiveCategory(category)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
+                    activeCategory === category 
+                      ? 'bg-[#1B1E16] text-[#D1F55C] shadow-md' 
+                      : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
             </div>
 
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">

@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { db } from '../../config/db.js';
-import { users, userProfiles } from '../../shared/schema.js';
+import { users } from '../../shared/schema.js';
 import { eq } from 'drizzle-orm';
 
 export const registerUser = async (email: string, passwordRaw: string) => {
