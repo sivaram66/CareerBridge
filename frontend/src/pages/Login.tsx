@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Megaphone, Mail, Lock, Loader2 } from 'lucide-react';
+import { Mail, Lock, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import CareerBridgeIcon from '../components/CareerBridgeIcon';
+
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -37,7 +39,7 @@ export default function Login() {
 
       <Link to="/" className="flex items-center space-x-3 mb-8 cursor-pointer hover:opacity-80 transition-opacity">
         <div className="w-12 h-12 bg-[#D1F55C] rounded-xl flex items-center justify-center shadow-lg shadow-[#D1F55C]/20">
-          <Megaphone className="w-6 h-6 text-[#1B1E16] fill-[#1B1E16]" />
+          <CareerBridgeIcon size={26} className="text-[#1B1E16]" />
         </div>
         <span className="text-2xl font-black tracking-tight text-gray-900">CareerBridge</span>
       </Link>

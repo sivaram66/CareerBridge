@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Clock, Building, ChevronDown, Megaphone, Star, User } from 'lucide-react';
+import { Search, MapPin, Clock, Building, ChevronDown, Star, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../api/axios';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import CareerBridgeIcon from '../components/CareerBridgeIcon';
+
 
 // --- PREMIUM AVATAR COMPONENT ---
 const AVATAR_COLORS = [
@@ -213,7 +214,7 @@ useEffect(() => {
             
             <Link to="/" className="flex items-center space-x-3 cursor-pointer">
               <div className="w-10 h-10 bg-[#D1F55C] rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(209,245,92,0.15)]">
-                <Megaphone className="w-5 h-5 text-[#1B1E16] fill-[#1B1E16]" />
+                <CareerBridgeIcon size={22} className="text-[#1B1E16]" />
               </div>
                 <span className="text-xl font-bold tracking-tight">CareerBridge</span>
             </Link>

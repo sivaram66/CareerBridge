@@ -5,10 +5,11 @@ import { useAuth } from '../context/AuthContext';
 import {
   User, Mail, Phone, MapPin, Briefcase,
   GraduationCap, Code2, Star, FileText, Globe, Edit3,
-  Check, X, ChevronRight, LogOut, Sparkles, Target,
+  Check, X, ChevronRight, LogOut, Target,
   Building2, Award, Plus, Trash2, TrendingUp, ExternalLink,
   Bell, Settings, BarChart2, BookOpen, Loader2, GitBranch, Link2
 } from 'lucide-react';
+import CareerBridgeIcon from '../components/CareerBridgeIcon';
 
 // Lucide-react this version doesn't ship Linkedin/Github — using inline SVG
 const LinkedinIcon = ({ size = 16 }: { size?: number }) => (
@@ -221,7 +222,7 @@ export default function Profile() {
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/jobs" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-[#1B1E16] rounded-lg flex items-center justify-center">
-              <Sparkles size={16} className="text-[#D1F55C]" />
+              <CareerBridgeIcon size={18} className="text-[#D1F55C]" />
             </div>
             <span className="text-lg font-black text-[#1B1E16] tracking-tight">CareerBridge</span>
           </Link>
@@ -249,20 +250,17 @@ export default function Profile() {
       </nav>
 
       {/* ── HERO BANNER ── */}
-      <div className="bg-[#1B1E16] h-40 relative overflow-hidden">
+      <div className="bg-[#1B1E16] h-36 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10"
           style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, #D1F55C 0%, transparent 50%), radial-gradient(circle at 80% 20%, #D1F55C 0%, transparent 40%)' }}
         />
-        <div className="max-w-7xl mx-auto px-6 h-full flex items-end pb-4">
-          <p className="text-slate-500 text-sm">Your professional profile</p>
-        </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 -mt-16 pb-20">
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-20">
+        <div className="flex flex-col lg:flex-row gap-6 items-start pt-8">
 
           {/* ── LEFT SIDEBAR ── */}
-          <div className="w-full lg:w-80 flex-shrink-0 space-y-4">
+          <div className="w-full lg:w-80 flex-shrink-0 space-y-4 lg:sticky lg:top-20">
 
             {/* Profile Card */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">

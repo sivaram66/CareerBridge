@@ -2,6 +2,8 @@ import React from 'react';
 import { Search, MapPin, CheckCircle2, ArrowUpRight, Sparkles, User } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom'; 
 import { useAuth } from '../context/AuthContext';
+import CareerBridgeIcon from './CareerBridgeIcon';
+
 
 export default function Hero() {
   const navigate = useNavigate();
@@ -26,7 +28,7 @@ export default function Hero() {
         {/* Brand Logo */}
         <div className="flex items-center space-x-3 mb-12">
           <div className="w-10 h-10 bg-[#D1F55C] rounded-full flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-[#1B1E16] fill-[#1B1E16]" />
+            <CareerBridgeIcon size={22} className="text-[#1B1E16]" />
           </div>
           <span className="text-2xl font-bold text-white tracking-tight">CareerBridge</span>
         </div>
