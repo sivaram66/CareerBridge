@@ -55,7 +55,7 @@ export async function ingestGreenhouseJobs(boardToken: string, companyName: stri
       throw new Error(`API rejected request with status: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as { jobs: GreenhouseJob[] };
     const rawJobs: GreenhouseJob[] = data.jobs;
 
     if (!rawJobs || rawJobs.length === 0) {

@@ -17,7 +17,29 @@ dotenv.config();
 
 const app: Application = express();
 
-app.use(cors());
+// ── CORS ─────────────────────────────────────────────────
+// Allow local dev + Vercel frontend deployments
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:4173',
+  // Production Vercel URLs (add your actual Vercel domain here after deploying)
+  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+  // Vercel preview URLs pattern
+  /https:\/\/career-bridge[\w-]*\.vercel\.app$/,
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (curl, Postman, server-to-server)
+    if (!origin) return callback(null, true);
+    const allowed = ALLOWED_ORIGINS.some(o =>
+      typeof o === 'string' ? o === origin : o.test(origin)
+    );
+    if (allowed) return callback(null, true);
+    callback(new Error(`CORS: origin ${origin} not allowed`));
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
 // ── Routes ──────────────────────────────────────────────

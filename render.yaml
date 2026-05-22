@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: careerbridge-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: DATABASE_URL
+        sync: false   # Set this in Render dashboard (your Neon DB URL)
+      - key: JWT_SECRET
+        sync: false   # Set this in Render dashboard
+      - key: RESEND_API_KEY
+        sync: false   # Set this in Render dashboard
+      - key: GEMINI_API_KEY
+        sync: false   # Set this in Render dashboard
+      - key: SERPAPI_KEY
+        sync: false   # Set this in Render dashboard
+      - key: FRONTEND_URL
+        sync: false   # Set to your Vercel URL e.g. https://careerbridge.vercel.app
+      - key: BASE_URL
+        sync: false   # Set to your Render service URL e.g. https://careerbridge-api.onrender.com
