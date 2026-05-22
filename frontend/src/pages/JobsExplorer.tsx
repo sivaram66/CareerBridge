@@ -96,26 +96,25 @@ export default function JobsExplorer() {
   const [selectedExperience, setSelectedExperience] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState("All");
   const { isAuthenticated } = useAuth();
-useEffect(() => {
+  useEffect(() => {
     const fetchJobs = async () => {
       setIsLoading(true);
       try {
-        const res = await axios.get(`http://localhost:5000/api/jobs?page=${page}&limit=50`);
-        
+        const res = await apiClient.get(`/jobs?page=${page}&limit=50`);
         if (page === 1) {
           setJobs(res.data);
         } else {
           setJobs((prevJobs) => [...prevJobs, ...res.data]);
         }
       } catch (error) {
-        console.error("Error fetching jobs:", error);
+        console.error('Error fetching jobs:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchJobs();
-  }, [page]); 
+  }, [page]);
 
   // Helper function to easily check/uncheck boxes
   const toggleFilter = (setState: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
