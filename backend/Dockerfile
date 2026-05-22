@@ -1,24 +1,24 @@
-# ── Runtime ─────────────────────────────────────────────
+# ── Runtime base ────────────────────────────────────────
 FROM node:20-alpine AS base
 WORKDIR /app
 
-# ── Dependencies ─────────────────────────────────────────
+# ── Production deps only ─────────────────────────────────
 FROM base AS deps
-COPY package*.json ./
-RUN npm ci --omit=dev
+COPY package.json package-lock.json* ./
+# Use npm install if no lockfile, npm ci if lockfile exists
+RUN if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi
 
-# ── Builder (compile TypeScript → JS) ────────────────────
+# ── Full install + TypeScript build ──────────────────────
 FROM base AS builder
-COPY package*.json ./
-RUN npm ci
+COPY package.json package-lock.json* ./
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 COPY . .
 RUN npm run build
 
-# ── Production image ──────────────────────────────────────
+# ── Lean production image ─────────────────────────────────
 FROM base AS runner
 ENV NODE_ENV=production
 
-# Copy compiled JS + production node_modules
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./package.json
