@@ -3,12 +3,27 @@ import { Link, useNavigate } from 'react-router-dom';
 import apiClient from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import {
-  User, Mail, Phone, MapPin, Linkedin, Github, Briefcase,
+  User, Mail, Phone, MapPin, Briefcase,
   GraduationCap, Code2, Star, FileText, Globe, Edit3,
   Check, X, ChevronRight, LogOut, Sparkles, Target,
   Building2, Award, Plus, Trash2, TrendingUp, ExternalLink,
-  Bell, Settings, BarChart2, BookOpen, Loader2
+  Bell, Settings, BarChart2, BookOpen, Loader2, GitBranch, Link2
 } from 'lucide-react';
+
+// Lucide-react this version doesn't ship Linkedin/Github — using inline SVG
+const LinkedinIcon = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+    <rect x="2" y="9" width="4" height="12"/>
+    <circle cx="4" cy="4" r="2"/>
+  </svg>
+);
+
+const GithubIcon = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+  </svg>
+);
 
 interface Profile {
   fullName: string;
@@ -271,13 +286,13 @@ export default function Profile() {
                   {profile.linkedinUrl && (
                     <a href={profile.linkedinUrl} target="_blank" rel="noreferrer"
                       className="w-9 h-9 rounded-xl bg-[#0A66C2]/10 text-[#0A66C2] flex items-center justify-center hover:bg-[#0A66C2]/20 transition-colors">
-                      <Linkedin size={16} />
+                      <LinkedinIcon size={16} />
                     </a>
                   )}
                   {profile.githubUrl && (
                     <a href={profile.githubUrl} target="_blank" rel="noreferrer"
                       className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center hover:bg-slate-200 transition-colors">
-                      <Github size={16} />
+                      <GithubIcon size={16} />
                     </a>
                   )}
                   {profile.portfolioUrl && (
@@ -445,10 +460,10 @@ export default function Profile() {
                       <Field label="Current Role / Title" icon={<Briefcase size={12} />}>
                         <InputField value={profile.currentRole} onChange={set('currentRole')} placeholder="e.g. Software Engineer" />
                       </Field>
-                      <Field label="GitHub Profile" icon={<Github size={12} />}>
+                      <Field label="GitHub Profile" icon={<GithubIcon size={12} />}>
                         <InputField value={profile.githubUrl} onChange={set('githubUrl')} placeholder="https://github.com/username" />
                       </Field>
-                      <Field label="LinkedIn Profile" icon={<Linkedin size={12} />}>
+                      <Field label="LinkedIn Profile" icon={<LinkedinIcon size={12} />}>
                         <InputField value={profile.linkedinUrl} onChange={set('linkedinUrl')} placeholder="https://linkedin.com/in/username" />
                       </Field>
                     </div>
