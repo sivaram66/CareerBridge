@@ -15,8 +15,10 @@ services:
         sync: false   # Set this in Render dashboard (your Neon DB URL)
       - key: JWT_SECRET
         sync: false   # Set this in Render dashboard
-      - key: RESEND_API_KEY
-        sync: false   # Set this in Render dashboard
+      - key: BREVO_API_KEY
+        sync: false   # Set in Render dashboard (from brevo.com)
+      - key: BREVO_SENDER_EMAIL
+        sync: false   # The sender email verified in Brevo
       - key: GEMINI_API_KEY
         sync: false   # Set this in Render dashboard
       - key: SERPAPI_KEY
