@@ -7,12 +7,28 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 30000, 
+  timeout: 30000,
 });
 
-// TODO: Attach JWT tokens via interceptor once auth flow is wired up
+// Attach JWT token from localStorage on every request
 apiClient.interceptors.request.use((config) => {
-    return config;
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
+
+// Global 401 handler - clear stale token
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default apiClient;
