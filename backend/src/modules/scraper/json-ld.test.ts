@@ -1,12 +1,12 @@
 import * as cheerio from 'cheerio';
-import { extractJobDataWithAI } from '../ai/geminiParser';
+import { analyzeJobMatch } from '../ai-summarizer/ai.service.js';
 
 // Scraper with two extraction paths:
 // Path A: Structured JSON-LD data (preferred, most accurate)
 // Path B: Gemini AI fallback for unstructured pages
 export const scrapeCustomJob = async (targetUrl: string) => {
   console.log(`\n🌐 Fetching HTML from: ${targetUrl}`);
-  
+
   try {
     const response = await fetch(targetUrl, {
       headers: {
@@ -14,10 +14,10 @@ export const scrapeCustomJob = async (targetUrl: string) => {
         'Accept': 'text/html,application/xhtml+xml,application/xml'
       }
     });
-    
+
     const html = await response.text();
     const $ = cheerio.load(html);
-    let jobData = null;
+    let jobData: any = null;
 
     $('script[type="application/ld+json"]').each((_, element) => {
       try {
@@ -26,8 +26,8 @@ export const scrapeCustomJob = async (targetUrl: string) => {
           const parsed = JSON.parse(jsonContent);
           if (parsed['@type'] === 'JobPosting') jobData = parsed;
           if (parsed['@graph']) {
-             const graphJob = parsed['@graph'].find((item: any) => item['@type'] === 'JobPosting');
-             if (graphJob) jobData = graphJob;
+            const graphJob = parsed['@graph'].find((item: any) => item['@type'] === 'JobPosting');
+            if (graphJob) jobData = graphJob;
           }
         }
       } catch (e) {}
@@ -40,19 +40,33 @@ export const scrapeCustomJob = async (targetUrl: string) => {
         company: jobData.hiringOrganization?.name || 'Unknown',
         remote: jobData.jobLocationType === 'TELECOMMUTE',
         techStack: [],
-        salary: jobData.baseSalary ? `${jobData.baseSalary.value.minValue} - ${jobData.baseSalary.value.maxValue}` : 'Not Disclosed'
+        salary: jobData.baseSalary
+          ? `${jobData.baseSalary.value?.minValue} - ${jobData.baseSalary.value?.maxValue}`
+          : 'Not Disclosed'
       };
-    } 
-    
+    }
+
     console.log('⚠️ No JSON-LD found. Activating Gemini AI Fallback...');
+
+    const rawBodyText = $('body').text().replace(/\s+/g, ' ').trim().substring(0, 4000);
     
-    const rawBodyText = $('body').text().replace(/\s+/g, ' ').trim();
-    const aiParsedData = await extractJobDataWithAI(rawBodyText);
+    // Use analyzeJobMatch as a best-effort fallback — pass raw text as the description
+    const aiParsedData = await analyzeJobMatch(
+      'Unknown Role',
+      'Unknown Company',
+      rawBodyText,
+      'General candidate'
+    );
 
     if (aiParsedData) {
-      console.log('🤖 AI Extracted Data:');
-      console.log(aiParsedData);
-      return aiParsedData;
+      console.log('🤖 AI Extracted Data (best-effort fallback)');
+      return {
+        title: 'Unknown Role',
+        company: 'Unknown Company',
+        remote: false,
+        techStack: aiParsedData.techStack || [],
+        salary: aiParsedData.salary || 'Not Disclosed',
+      };
     } else {
       console.log('❌ AI failed to parse the document.');
       return null;
@@ -63,6 +77,3 @@ export const scrapeCustomJob = async (targetUrl: string) => {
     return null;
   }
 };
-
-const testUrl = 'https://jobs.apple.com/en-us/details/200606145-3810/software-engineering-internships'; 
-scrapeCustomJob(testUrl);

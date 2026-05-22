@@ -24,7 +24,7 @@ function parseExperienceRequirements(jobDescription: string, jobTitle: string) {
 
   if (match) {
     extractedExperience = match[0];
-    const minYears = parseInt(match[1]);
+    const minYears = parseInt(match[1] ?? '0');
     if (minYears === 0 && !isSeniorRole) {
       isFresherOk = true;
     } else {

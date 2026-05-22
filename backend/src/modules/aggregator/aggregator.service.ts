@@ -1,45 +1,33 @@
-import { scrapeQueue } from '../queue/jobQueue.js';
+import { sweepGoogleJobs } from '../ingestion/radar/googleJobs.js';
 
-// Placeholder URL — replace with Adzuna, Jooble, or SerpApi endpoint in production
-const EXTERNAL_API_URL = 'https://api.example-job-board.com/v1/jobs?keyword=node.js&location=remote';
+/**
+ * Internship-focused aggregator sweep.
+ * Replaces the old placeholder external API URL that was never implemented.
+ * Runs targeted Google Jobs queries specifically for internships and fresher roles in India.
+ */
+export const fetchInternshipsFromGoogle = async () => {
+  console.log('\n🌊 [AGGREGATOR] Launching internship-focused Google sweep...');
 
-export const fetchJobsFromExternalAPI = async () => {
-  console.log('🌊 [FIREHOSE] Opening the external job API valve...');
+  const internshipQueries = [
+    'Software Engineer Internship India 2025',
+    'Frontend Developer Intern Bangalore',
+    'Backend Developer Intern India',
+    'Full Stack Intern Hyderabad Pune',
+    'Data Science Intern India',
+    'Machine Learning Intern India',
+    'React Developer Intern India',
+    'Node.js Intern India',
+  ];
 
-  try {
-    const response = await fetch(EXTERNAL_API_URL, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`External API failed with status: ${response.status}`);
+  for (const query of internshipQueries) {
+    try {
+      await sweepGoogleJobs(query, 3); // 3 pages per query
+      // Small delay between queries to respect rate limits
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    } catch (err: any) {
+      console.error(`[AGGREGATOR] ❌ Failed query "${query}":`, err.message);
     }
-
-    const data = await response.json();
-    const jobListings = data.results || []; 
-
-    if (jobListings.length === 0) {
-      console.log('🤷‍♂️ [FIREHOSE] No new jobs found from the API right now.');
-      return;
-    }
-
-    console.log(`🎯 [FIREHOSE] Found ${jobListings.length} new jobs! Pushing to the conveyor belt...`);
-
-    for (const job of jobListings) {
-      if (job.job_url) {
-        await scrapeQueue.add('scrape-job', { 
-          url: job.job_url,
-          companyName: job.company_name || 'Unknown' 
-        });
-      }
-    }
-
-    console.log('✅ [FIREHOSE] Successfully loaded all new jobs onto the Redis Queue.');
-
-  } catch (error) {
-    console.error('❌ [FIREHOSE] Error fetching from external API:', error);
   }
+
+  console.log('\n✅ [AGGREGATOR] Internship sweep complete.');
 };

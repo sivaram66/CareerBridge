@@ -1,7 +1,7 @@
 import { Queue, Worker } from 'bullmq';
-import IORedis from 'ioredis';
-import { scrapeCustomJob } from '../scraper/json-ld.test.ts'; 
-import { saveJobToDatabase } from '../db/saveJob.ts';
+import { Redis } from 'ioredis';
+import { scrapeCustomJob } from '../scraper/json-ld.test.js';
+import { saveJobToDatabase } from '../db/saveJob.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -11,7 +11,7 @@ if (!REDIS_URL) {
   throw new Error(' REDIS_URL not found in .env');
 }
 
-const redisConnection = new IORedis(REDIS_URL, {
+const redisConnection = new Redis(REDIS_URL, {
   maxRetriesPerRequest: null,
 });
 
@@ -31,9 +31,9 @@ const worker = new Worker('job-scrape-queue', async (job) => {
   console.log('[WORKER] ⏳ Resting for 5 seconds...');
   await new Promise(resolve => setTimeout(resolve, 5000));
 
-}, { 
+}, {
   connection: redisConnection,
-  concurrency: 1 
+  concurrency: 1
 });
 
 worker.on('completed', job => console.log(`[WORKER] ✅ Finished Job ${job.id}`));

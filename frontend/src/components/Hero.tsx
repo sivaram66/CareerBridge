@@ -1,9 +1,11 @@
 import React from 'react';
-import { Search, MapPin, CheckCircle2, ArrowUpRight, Sparkles } from 'lucide-react';
-import { useNavigate, Link } from 'react-router-dom'; // <-- Added Router imports
+import { Search, MapPin, CheckCircle2, ArrowUpRight, Sparkles, User } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom'; 
+import { useAuth } from '../context/AuthContext';
 
 export default function Hero() {
-  const navigate = useNavigate(); // <-- Added navigation hook
+  const navigate = useNavigate();
+  const { token } = useAuth();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,14 +64,34 @@ export default function Hero() {
       */}
       <div className="w-full lg:w-[55%] bg-white rounded-t-[3rem] lg:rounded-[3rem] shadow-2xl relative flex flex-col justify-center p-8 lg:p-12 xl:p-20 min-h-[700px]">
         
-        {/* DESKTOP AUTH - Perfectly aligned inside the white box */}
-        <div className="absolute top-8 right-8 lg:top-10 lg:right-12 z-50 hidden lg:flex items-center gap-6">
-          <Link to="/login" className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors">
-            Sign In
-          </Link>
-          <Link to="/register" className="bg-[#1B1E16] text-[#D1F55C] text-sm font-bold px-7 py-2.5 rounded-full hover:bg-black transition-all shadow-lg shadow-black/5 hover:-translate-y-0.5">
-            Create Account
-          </Link>
+        {/* DESKTOP AUTH - Dynamic based on Login State */}
+        <div className="absolute top-8 right-8 lg:top-8 lg:right-10 z-50 hidden lg:flex items-center gap-3">
+          
+          {token ? (
+            /* --- LOGGED IN VIEW --- */
+            <>
+              <Link to="/jobs" className="bg-[#D1F55C] text-[#1B1E16] text-sm font-extrabold px-6 py-2.5 rounded-full hover:bg-[#c2e434] transition-all shadow-[0_0_15px_rgba(209,245,92,0.3)] hover:shadow-[0_0_20px_rgba(209,245,92,0.5)] hover:-translate-y-0.5 flex items-center gap-1.5">
+                Explore Jobs <ArrowUpRight className="w-4 h-4" />
+              </Link>
+              <Link to="/profile" className="w-10 h-10 bg-[#1B1E16] rounded-full flex items-center justify-center text-[#D1F55C] hover:bg-black transition-all shadow-md hover:-translate-y-0.5 border border-slate-700">
+                <User className="w-5 h-5" />
+              </Link>
+            </>
+          ) : (
+            /* --- LOGGED OUT VIEW --- */
+            <>
+              <Link to="/login" className="text-sm font-bold text-[#1B1E16] bg-slate-100 px-6 py-2.5 rounded-full hover:bg-slate-200 transition-all">
+                Sign In
+              </Link>
+              <Link to="/register" className="bg-[#1B1E16] text-[#D1F55C] text-sm font-bold px-6 py-2.5 rounded-full hover:bg-black transition-all shadow-md hover:-translate-y-0.5">
+                Create Account
+              </Link>
+              <Link to="/jobs" className="bg-[#D1F55C] text-[#1B1E16] text-sm font-extrabold px-6 py-2.5 rounded-full hover:bg-[#c2e434] transition-all shadow-[0_0_15px_rgba(209,245,92,0.3)] hover:shadow-[0_0_20px_rgba(209,245,92,0.5)] hover:-translate-y-0.5 flex items-center gap-1.5">
+                Explore Jobs <ArrowUpRight className="w-4 h-4" />
+              </Link>
+            </>
+          )}
+
         </div>
 
         {/* Mobile Login Links (Shows only on small screens) */}
@@ -84,20 +106,7 @@ export default function Hero() {
           <div className="text-[#1B1E16] font-semibold text-lg tracking-wide">Jobs in Vault</div>
         </div>
 
-        {/* Floating Job Card (Mailchimp) */}
-        <div className="hidden lg:flex absolute top-12 right-12 bg-white p-6 rounded-3xl shadow-[0_10px_40px_rgb(0,0,0,0.08)] border border-slate-100 w-64 z-20 hover:-translate-y-1 transition-transform flex-col items-center text-center">
-          <div className="w-16 h-16 bg-[#FFD700] rounded-full mb-4 flex items-center justify-center text-slate-900 font-bold text-3xl">
-            M
-          </div>
-          <div className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">Job By</div>
-          <div className="font-extrabold text-slate-900 mb-3 flex items-center justify-center gap-1 text-lg">
-            Mailchimp
-            <ArrowUpRight className="w-4 h-4 text-slate-400" />
-          </div>
-          <p className="text-xs text-slate-500 leading-relaxed px-2 font-medium">
-            Mailchimp is an all-in-one Marketing Platform for small business.
-          </p>
-        </div>
+        
 
         {/* The Actual Content */}
         <div className="relative z-10 max-w-lg mt-10 lg:mt-0 mx-auto lg:mx-0 lg:ml-12">

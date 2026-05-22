@@ -15,7 +15,7 @@ export const sendOTP = async (toEmail: string, otpCode: string) => {
     const apiKey = process.env.BREVO_API_KEY;
 
     if (!apiKey) {
-      console.error("❌ Missing BREVO_API_KEY in .env");
+      console.error(" Missing BREVO_API_KEY in .env");
       return false;
     }
 

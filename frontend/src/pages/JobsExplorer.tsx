@@ -3,6 +3,7 @@ import { Search, MapPin, Clock, Building, ChevronDown, Megaphone, Star, User } f
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../api/axios';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 // --- PREMIUM AVATAR COMPONENT ---
 const AVATAR_COLORS = [
@@ -84,32 +85,36 @@ const CATEGORY_MAP: Record<string, string[]> = {
 
 export default function JobsExplorer() {
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchLocation, setSearchLocation] = useState('');
 
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>([]);
   const [selectedExperience, setSelectedExperience] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState("All");
   const { isAuthenticated } = useAuth();
-  useEffect(() => {
+useEffect(() => {
     const fetchJobs = async () => {
+      setIsLoading(true);
       try {
-        console.log("📡 Sending request to backend...");
-        const response = await apiClient.get('/jobs');
+        const res = await axios.get(`http://localhost:5000/api/jobs?page=${page}&limit=50`);
         
-        console.log("✅ Backend replied! Raw data:", response.data);
-        
-        // Safely extract the data array
-        const jobData = response.data.data || response.data;
-        setJobs(jobData);
+        if (page === 1) {
+          setJobs(res.data);
+        } else {
+          setJobs((prevJobs) => [...prevJobs, ...res.data]);
+        }
       } catch (error) {
-        console.error("❌ Frontend Error:", error);
+        console.error("Error fetching jobs:", error);
       } finally {
-        setLoading(false); // <--- THIS is what hides the gray skeleton boxes!
+        setIsLoading(false);
       }
     };
+
     fetchJobs();
-  }, []);
+  }, [page]); 
 
   // Helper function to easily check/uncheck boxes
   const toggleFilter = (setState: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
@@ -122,6 +127,21 @@ export default function JobsExplorer() {
 
   // --- UPGRADED: ADVANCED FILTERING ENGINE ---
   const filteredJobs = jobs.filter((job) => {
+
+    // 0. Keyword Search (title + company name)
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const titleMatch = (job.title || '').toLowerCase().includes(q);
+      const companyMatch = (job.companyName || '').toLowerCase().includes(q);
+      if (!titleMatch && !companyMatch) return false;
+    }
+
+    // 0b. Location search bar
+    if (searchLocation.trim()) {
+      const loc = searchLocation.toLowerCase();
+      const jobLoc = (job.location || '').toLowerCase();
+      if (!jobLoc.includes(loc) && !(job.isRemote && loc.includes('remote'))) return false;
+    }
     
     // 1. Location Match (Checks if the job's location string includes any selected city)
     // 1. Location Match with Aliasing
@@ -190,12 +210,13 @@ export default function JobsExplorer() {
       <div className="bg-[#1B1E16] text-white">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-8 pb-20">
           <div className="flex items-center justify-between mb-12">
-            <div className="flex items-center space-x-3 cursor-pointer">
+            
+            <Link to="/" className="flex items-center space-x-3 cursor-pointer">
               <div className="w-10 h-10 bg-[#D1F55C] rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(209,245,92,0.15)]">
                 <Megaphone className="w-5 h-5 text-[#1B1E16] fill-[#1B1E16]" />
               </div>
-              <span className="text-xl font-bold tracking-tight">CareerBridge</span>
-            </div>
+                <span className="text-xl font-bold tracking-tight">CareerBridge</span>
+            </Link>
             
             <div className="flex items-center space-x-6 text-sm font-medium text-gray-400">
               <span className="hover:text-[#D1F55C] cursor-pointer transition-colors">Find Jobs</span>
@@ -238,7 +259,10 @@ export default function JobsExplorer() {
           <div className="flex-1 flex items-center px-4 py-3 md:py-2 w-full border-b md:border-b-0 md:border-r border-gray-100 group">
             <Search className="w-5 h-5 text-gray-400 mr-3 group-focus-within:text-[#1B1E16] transition-colors" />
             <input 
-              type="text" 
+              id="job-search-input"
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Job title, keywords, or company" 
               className="w-full bg-transparent border-none focus:outline-none text-gray-900 placeholder-gray-400 text-sm font-medium"
             />
@@ -246,12 +270,18 @@ export default function JobsExplorer() {
           <div className="flex-1 flex items-center px-4 py-3 md:py-2 w-full group">
             <MapPin className="w-5 h-5 text-gray-400 mr-3 group-focus-within:text-[#1B1E16] transition-colors" />
             <input 
-              type="text" 
+              id="location-search-input"
+              type="text"
+              value={searchLocation}
+              onChange={(e) => setSearchLocation(e.target.value)}
               placeholder="City, state, or remote" 
               className="w-full bg-transparent border-none focus:outline-none text-gray-900 placeholder-gray-400 text-sm font-medium"
             />
           </div>
-          <button className="w-full md:w-auto mt-2 md:mt-0 bg-[#1B1E16] hover:bg-black text-[#D1F55C] font-bold px-10 py-3 rounded-lg transition-colors text-sm">
+          <button 
+            onClick={() => { setSearchQuery(searchQuery); setSearchLocation(searchLocation); }}
+            className="w-full md:w-auto mt-2 md:mt-0 bg-[#1B1E16] hover:bg-black text-[#D1F55C] font-bold px-10 py-3 rounded-lg transition-colors text-sm"
+          >
             Search
           </button>
         </div>
@@ -354,7 +384,7 @@ export default function JobsExplorer() {
             </div>
 
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-              {loading ? (
+              {isLoading && page === 1 ? (
                 <div className="p-6 space-y-4">
                   {[1, 2, 3, 4].map((skeleton) => (
                     <div key={skeleton} className="h-24 bg-gray-50 rounded-lg animate-pulse"></div>
@@ -462,6 +492,20 @@ export default function JobsExplorer() {
                 </div>
               )}
             </div>
+
+            {/* Load More Button — at the BOTTOM of the feed */}
+            {filteredJobs.length > 0 && (
+              <div className="flex justify-center mt-12 mb-20">
+                <button 
+                  id="load-more-jobs-btn"
+                  onClick={() => setPage(prevPage => prevPage + 1)}
+                  disabled={isLoading}
+                  className="bg-white border border-slate-200 text-slate-700 font-bold px-8 py-3 rounded-full hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm disabled:opacity-50"
+                >
+                  {isLoading ? 'Loading...' : 'Load More Jobs'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

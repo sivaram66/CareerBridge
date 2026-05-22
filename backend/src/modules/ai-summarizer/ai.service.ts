@@ -7,32 +7,32 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
 
 export const analyzeJobMatch = async (jobTitle: string, jobCompany: string, jobDescription: string, userProfile: string) => {
   const schema = {
-    type: SchemaType.OBJECT,
+    type: SchemaType.OBJECT as const,
     properties: {
-      summary: { 
-        type: SchemaType.STRING, 
-        description: "A 2-3 sentence summary explaining exactly what the candidate will work on." 
+      summary: {
+        type: SchemaType.STRING as const,
+        description: "A 2-3 sentence summary explaining exactly what the candidate will work on."
       },
-      techStack: { 
-        type: SchemaType.ARRAY, 
-        items: { type: SchemaType.STRING },
+      techStack: {
+        type: SchemaType.ARRAY as const,
+        items: { type: SchemaType.STRING as const },
         description: "List of exactly which technologies are required."
       },
-      experience: { 
-        type: SchemaType.STRING, 
-        description: "Years of experience required. e.g. 'Fresher', '0-1 Years', '3+ Years', or 'Not specified'" 
+      experience: {
+        type: SchemaType.STRING as const,
+        description: "Years of experience required. e.g. 'Fresher', '0-1 Years', '3+ Years', or 'Not specified'"
       },
-      salary: { 
-        type: SchemaType.STRING, 
-        description: "Salary range if explicitly mentioned, otherwise 'Not Disclosed'" 
+      salary: {
+        type: SchemaType.STRING as const,
+        description: "Salary range if explicitly mentioned, otherwise 'Not Disclosed'"
       },
-      matchScore: { 
-        type: SchemaType.INTEGER, 
-        description: "A score from 0-100 calculating how well the candidate's profile matches this specific job." 
+      matchScore: {
+        type: SchemaType.INTEGER as const,
+        description: "A score from 0-100 calculating how well the candidate's profile matches this specific job."
       },
-      matchReason: { 
-        type: SchemaType.STRING, 
-        description: "A short, encouraging 1-sentence explanation of why they got this score." 
+      matchReason: {
+        type: SchemaType.STRING as const,
+        description: "A short, encouraging 1-sentence explanation of why they got this score."
       }
     },
     required: ["summary", "techStack", "experience", "salary", "matchScore", "matchReason"]

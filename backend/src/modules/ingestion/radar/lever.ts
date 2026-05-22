@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { pool } from '../../../config/db.js';
+import { db } from '../../../config/db.js';
+import { jobs } from '../../../shared/schema.js';
 
 function parseExperienceRequirements(jobDescription: string, jobTitle: string) {
   const text = (jobDescription || '').toLowerCase();
@@ -14,7 +15,7 @@ function parseExperienceRequirements(jobDescription: string, jobTitle: string) {
 
   if (match) {
     extractedExperience = match[0];
-    const minYears = parseInt(match[1]);
+    const minYears = parseInt(match[1] ?? '0');
     if (minYears === 0 && !isSeniorRole) {
       isFresherOk = true;
     } else {
@@ -28,8 +29,8 @@ function parseExperienceRequirements(jobDescription: string, jobTitle: string) {
   }
 
   if (!isSeniorRole && title.match(/(intern|fresher|entry level)/i)) {
-      isFresherOk = true;
-      if (extractedExperience === "Not Specified") extractedExperience = "Fresher / Entry Level";
+    isFresherOk = true;
+    if (extractedExperience === "Not Specified") extractedExperience = "Fresher / Entry Level";
   }
 
   return { experienceString: extractedExperience, fresherOk: isFresherOk };
@@ -41,7 +42,7 @@ export async function sweepLever(companyName: string, boardToken: string) {
     console.log(`\n[RADAR - LEVER] 📡 Scanning: ${companyName}`);
 
     const response = await axios.get(url, { timeout: 10000 });
-    const rawJobs = response.data; 
+    const rawJobs = response.data;
 
     if (!rawJobs || rawJobs.length === 0) {
       console.log(`[RADAR] ⚠️ No jobs found for ${companyName}.`);
@@ -60,33 +61,33 @@ export async function sweepLever(companyName: string, boardToken: string) {
       const locationString = (job.categories?.location || '').toLowerCase();
       const commitmentString = (job.categories?.commitment || '').toLowerCase();
       const descString = (job.descriptionPlain || job.description || '');
-      
+
       const jobDate = new Date(job.createdAt);
       if (jobDate < cutoffDate) continue;
 
-      const isTechRole = 
-        titleString.includes('engineer') || titleString.includes('developer') || 
-        titleString.includes('software') || titleString.includes('data') || 
-        titleString.includes('product') || titleString.includes('design') || 
+      const isTechRole =
+        titleString.includes('engineer') || titleString.includes('developer') ||
+        titleString.includes('software') || titleString.includes('data') ||
+        titleString.includes('product') || titleString.includes('design') ||
         titleString.includes('backend') || titleString.includes('frontend') ||
         titleString.includes('fullstack') || titleString.includes('full stack') ||
         titleString.includes('ai ') || titleString.includes('machine learning') ||
-        titleString.includes('sde');
+        titleString.includes('sde') || titleString.includes('intern');
 
       if (!isTechRole) continue;
 
       let isRemote = false;
       let country = 'Unknown';
 
-      if (locationString.includes('remote') || locationString.includes('anywhere') || 
+      if (locationString.includes('remote') || locationString.includes('anywhere') ||
           commitmentString.includes('remote') || job.workplaceType === 'remote') {
         isRemote = true;
       }
 
-      if (locationString.includes('india') || locationString.includes('ind') || 
-          locationString.includes('bengaluru') || locationString.includes('bangalore') || 
-          locationString.includes('mumbai') || locationString.includes('delhi') || 
-          locationString.includes('gurugram') || locationString.includes('noida') || 
+      if (locationString.includes('india') || locationString.includes('ind') ||
+          locationString.includes('bengaluru') || locationString.includes('bangalore') ||
+          locationString.includes('mumbai') || locationString.includes('delhi') ||
+          locationString.includes('gurugram') || locationString.includes('noida') ||
           locationString.includes('pune') || locationString.includes('hyderabad')) {
         country = 'India';
       }
@@ -95,17 +96,17 @@ export async function sweepLever(companyName: string, boardToken: string) {
 
       if (isRemote || country === 'India') {
         jobsToInsert.push({
-          external_job_id: `lever-${job.id}`,
-          company_name: companyName,
-          title: job.text, 
+          externalJobId: `lever-${job.id}`,
+          companyName: companyName,
+          title: job.text,
           location: job.categories?.location || 'Unspecified',
           description: job.descriptionPlain || '',
-          is_remote: isRemote,
+          isRemote: isRemote,
           country: country,
-          apply_url: job.hostedUrl, 
+          applyUrl: job.hostedUrl,
           experience: experienceString,
-          fresher_ok: fresherOk,
-          is_featured: true 
+          fresherOk: fresherOk,
+          isFeatured: true,
         });
 
         if (jobsToInsert.length >= MAX_JOBS_PER_COMPANY) {
@@ -122,22 +123,15 @@ export async function sweepLever(companyName: string, boardToken: string) {
 
     console.log(`[RADAR] 🏗️ Filtered down to ${jobsToInsert.length} Premium Tech Lever jobs. Executing Injection...`);
 
-    for (const job of jobsToInsert) {
-      try {
-        await pool.query(
-          `INSERT INTO jobs (external_job_id, company_name, title, location, description, is_remote, country, apply_url, experience, fresher_ok, is_featured) 
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-           ON CONFLICT (external_job_id) DO NOTHING`,
-          [job.external_job_id, job.company_name, job.title, job.location, job.description, job.is_remote, job.country, job.apply_url, job.experience, job.fresher_ok, job.is_featured]
-        );
-      } catch (dbError) {
-      }
-    }
+    await db.insert(jobs)
+      .values(jobsToInsert)
+      .onConflictDoNothing({ target: jobs.externalJobId });
 
     console.log(`[RADAR] ✅ Successfully injected ${companyName} (Lever) into Neon Vault.`);
 
   } catch (error: any) {
     if (error.response?.status === 404) {
+      // Silently skip — company not on Lever
     } else {
       console.error(`[RADAR] 🚨 Error scraping Lever for ${companyName}:`, error.message);
     }

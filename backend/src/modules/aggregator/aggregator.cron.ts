@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import { fetchJobsFromExternalAPI } from './aggregator.service.js';
+import { fetchInternshipsFromGoogle } from './aggregator.service.js';
 
 export const startAggregatorCron = () => {
   console.log('⏰ [CRON] Aggregator scheduler initialized. Waiting for next cycle...');
@@ -9,9 +9,9 @@ export const startAggregatorCron = () => {
     console.log('\n=============================================');
     console.log('⏰ [CRON] Waking up the Aggregator Engine...');
     console.log('=============================================');
-    
+
     try {
-      await fetchJobsFromExternalAPI();
+      await fetchInternshipsFromGoogle();
     } catch (error) {
       console.error('❌ [CRON] Aggregator cycle failed:', error);
     }

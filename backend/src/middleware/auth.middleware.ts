@@ -1,8 +1,5 @@
-import express, {type Request, type Response, type NextFunction } from 'express';
-import * as jwtPkg from 'jsonwebtoken';
-const { verify } = jwtPkg;
-
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-careerbridge-key-change-me-in-production';
+import { type Request, type Response, type NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
 
 export interface AuthRequest extends Request {
   user?: { userId: number };
@@ -17,7 +14,8 @@ export const requireAuth = (req: AuthRequest, res: Response, next: NextFunction)
   }
 
   try {
-    const decoded = verify(token, JWT_SECRET) as { userId: number };
+    const secret = process.env.JWT_SECRET || 'super-secret-key';
+    const decoded = jwt.verify(token, secret) as { userId: number };
     req.user = decoded;
     next();
   } catch (error) {

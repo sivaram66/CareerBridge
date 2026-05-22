@@ -1,5 +1,5 @@
 import type { Response } from 'express';
-import type { AuthRequest } from '../../shared/middleware/auth.middleware.js';
+import type { AuthRequest } from '../../middleware/auth.middleware.js';
 import * as crmService from './crm.service.js';
 
 export const trackJobHandler = async (req: AuthRequest, res: Response): Promise<void> => {

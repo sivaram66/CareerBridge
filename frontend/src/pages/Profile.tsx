@@ -31,7 +31,7 @@ export default function Profile() {
         const res = await axios.get('http://localhost:5000/api/profile', {
           headers: { Authorization: `Bearer ${token}` }
         });
-        
+
         const p = res.data;
 
         setFormData({
@@ -100,7 +100,7 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans pb-20">
-      
+
 
       <div className="bg-[#1B1E16] text-white pt-10 pb-32 px-6">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
@@ -119,7 +119,7 @@ export default function Profile() {
 
       <div className="max-w-4xl mx-auto px-6 -mt-20 relative z-10">
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 md:p-12">
-          
+
           <div className="flex items-center gap-5 mb-10 pb-8 border-b border-gray-100">
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center border-4 border-white shadow-md">
               <User className="w-10 h-10 text-gray-400" />
@@ -137,14 +137,14 @@ export default function Profile() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-12">
-            
+
 
             <section>
-              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2"><User className="w-4 h-4"/> Basic Info</h3>
+              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2"><User className="w-4 h-4" /> Basic Info</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">Full Name</label>
-                  <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#1B1E16] outline-none transition-all" placeholder="John Doe" />
+                  <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#1B1E16] outline-none transition-all" placeholder="Siva Ram" />
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">Headline</label>
@@ -163,7 +163,7 @@ export default function Profile() {
 
 
             <section>
-              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2"><Briefcase className="w-4 h-4"/> Professional</h3>
+              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2"><Briefcase className="w-4 h-4" /> Professional</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">Current Company</label>
@@ -186,7 +186,7 @@ export default function Profile() {
 
 
             <section>
-              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2"><GraduationCap className="w-4 h-4"/> Education</h3>
+              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2"><GraduationCap className="w-4 h-4" /> Education</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">College / University</label>
@@ -209,7 +209,7 @@ export default function Profile() {
 
 
             <section>
-              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2"><LinkIcon className="w-4 h-4"/> Preferences & Assets</h3>
+              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2"><LinkIcon className="w-4 h-4" /> Preferences & Assets</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">Preferred Roles</label>
@@ -231,8 +231,8 @@ export default function Profile() {
             </section>
 
             <div className="pt-6 border-t border-gray-100 flex justify-end">
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={isSaving}
                 className="bg-[#c2e434] text-[#1B1E16] font-bold px-10 py-4 rounded-xl hover:bg-[#b0d02b] transition-colors shadow-sm disabled:opacity-70 flex items-center gap-2"
               >

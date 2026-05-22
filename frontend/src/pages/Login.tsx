@@ -21,11 +21,9 @@ export default function Login() {
     try {
 
       const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
-      
-
+     
       login(res.data.token);
-      
-      navigate(-1); // Return to the page the user was on before login
+      navigate('/jobs');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to login. Please check your credentials.');
     } finally {

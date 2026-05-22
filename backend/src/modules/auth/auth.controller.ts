@@ -6,7 +6,7 @@ import { users, userProfiles } from '../../shared/schema.js';
 import { eq } from 'drizzle-orm';
 import { sendOTP } from '../../utils/email.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key';
+
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -23,7 +23,7 @@ export const register = async (req: Request, res: Response) => {
     const passwordHash = await bcrypt.hash(password, 10);
 
     if (existingUser.length > 0) {
-      const user = existingUser[0];
+      const user = existingUser[0]!;
 
       if (user.isVerified) {
         return res.status(409).json({ error: 'Email already in use. Please log in.' });
@@ -36,10 +36,10 @@ export const register = async (req: Request, res: Response) => {
 
       await sendOTP(email, otpCode);
 
-      return res.status(200).json({ 
+      return res.status(200).json({
         message: 'New OTP sent to existing unverified account.',
         requireOtp: true,
-        email: user.email 
+        email: user.email
       });
     }
 
@@ -48,17 +48,19 @@ export const register = async (req: Request, res: Response) => {
       passwordHash,
       otp: otpCode,
       otpExpiry: otpExpiry,
-      isVerified: false 
+      isVerified: false
     }).returning();
+
+    if (!newUser) throw new Error('Failed to create user');
 
     await db.insert(userProfiles).values({ userId: newUser.id });
 
     await sendOTP(email, otpCode);
 
-    res.status(201).json({ 
+    res.status(201).json({
       message: 'Account created. Please verify your email.',
       requireOtp: true,
-      email: newUser.email 
+      email: newUser.email
     });
 
   } catch (error: any) {
@@ -93,7 +95,8 @@ export const verifyOtp = async (req: Request, res: Response) => {
       .set({ isVerified: true, otp: null, otpExpiry: null })
       .where(eq(users.id, user.id));
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+    const jwtSecret = process.env.JWT_SECRET || 'super-secret-key';
+    const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '7d' });
 
     res.json({ message: 'Email verified successfully', token });
 
@@ -117,7 +120,8 @@ export const login = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Please verify your email before logging in.', requireOtp: true });
     }
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+    const jwtSecret = process.env.JWT_SECRET || 'super-secret-key';
+    const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '7d' });
 
     res.json({ message: 'Login successful', token, user: { id: user.id, email: user.email } });
 
