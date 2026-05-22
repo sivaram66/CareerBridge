@@ -19,12 +19,15 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Global 401 handler - clear stale token
+// Global auth error handler — clear stale token and redirect to login
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const status = error.response?.status;
+    // 401 = unauthenticated, 403 = old middleware behavior for expired token
+    if (status === 401 || status === 403) {
       localStorage.removeItem('token');
+      sessionStorage.setItem('auth_redirect_msg', 'Your session has expired. Please sign in again.');
       window.location.href = '/login';
     }
     return Promise.reject(error);

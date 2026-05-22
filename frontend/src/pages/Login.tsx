@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Loader2 } from 'lucide-react';
 import axios from 'axios';
@@ -10,10 +10,19 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [sessionMsg, setSessionMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  useEffect(() => {
+    const msg = sessionStorage.getItem('auth_redirect_msg');
+    if (msg) {
+      setSessionMsg(msg);
+      sessionStorage.removeItem('auth_redirect_msg');
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +59,12 @@ export default function Login() {
           <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Welcome back</h2>
           <p className="text-gray-500 font-medium">Sign in to continue to your account.</p>
         </div>
+
+        {sessionMsg && (
+          <div className="bg-amber-50 text-amber-700 p-4 rounded-xl text-sm font-semibold mb-4 border border-amber-200 flex items-center gap-2">
+            <span>⏱</span> {sessionMsg}
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-semibold mb-6 border border-red-100">
