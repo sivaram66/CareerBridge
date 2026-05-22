@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Clock, Building, ChevronDown, Star, User } from 'lucide-react';
+import { Search, MapPin, Building, ChevronDown, Star, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../api/axios';
 import { Link } from 'react-router-dom';
@@ -396,7 +396,6 @@ export default function JobsExplorer() {
                     
                     // 2. DATA MAPPING DIRECTLY FROM SCHEMA
                     const company = job.companyName || 'Confidential';
-                    const initial = company !== 'Confidential' ? company.substring(0, 2).toUpperCase() : 'CO';
                     const isFeatured = job.isFeatured || false;
                     const isFresherOk = job.fresherOk || false;
                     const salary = job.salaryRange || "Not Disclosed";

@@ -5,9 +5,9 @@ import { useAuth } from '../context/AuthContext';
 import {
   User, Mail, Phone, MapPin, Briefcase,
   GraduationCap, Code2, Star, FileText, Globe, Edit3,
-  Check, X, ChevronRight, LogOut, Target,
+  Check, X, LogOut, Target,
   Building2, Award, Plus, Trash2, TrendingUp, ExternalLink,
-  Bell, Settings, BarChart2, BookOpen, Loader2, GitBranch, Link2
+  Bell, Settings, BarChart2, BookOpen, Loader2
 } from 'lucide-react';
 import CareerBridgeIcon from '../components/CareerBridgeIcon';
 
@@ -125,7 +125,7 @@ function InputField({ value, onChange, placeholder, type = 'text' }: {
 }
 
 export default function Profile() {
-  const { token, logout, isAuthenticated } = useAuth();
+  const { logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile>(emptyProfile);
   const [loading, setLoading] = useState(true);
@@ -133,7 +133,7 @@ export default function Profile() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('Overview');
-  const saveTimer = useRef<ReturnType<typeof setTimeout>>();
+  const saveTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     if (!isAuthenticated) {
