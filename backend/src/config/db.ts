@@ -1,12 +1,18 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
-import * as schema from '../shared/schema.js'; 
+import * as schema from '../shared/schema.js';
 
 dotenv.config();
 
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+
+  ssl: {
+    rejectUnauthorized: false,
+  },
+
+  connectionTimeoutMillis: 10000,
 });
 
 pool.on('connect', () => {
