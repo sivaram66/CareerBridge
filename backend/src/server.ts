@@ -53,6 +53,9 @@ app.use('/api/scraper', scraperRoutes);
 app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'active', uptime: process.uptime(), message: 'CareerBridge API is live 🚀' });
 });
+app.head('/health', (_req: Request, res: Response) => {
+  res.status(200).json({ status: 'active', uptime: process.uptime(), message: 'CareerBridge API is live 🚀' });
+});
 
 // ── Admin: Manual Sweep Trigger ───────────────────────────
 app.post('/api/admin/trigger-sweep', async (_req: Request, res: Response) => {
@@ -80,7 +83,7 @@ app.listen(PORT, async () => {
   // Verify DB
   try {
     await pool.query('SELECT 1');
-    console.log('📦 Database connected.');
+    console.log('📦 Database connected.'); 
   } catch (error) {
     console.error('❌ Database connection failed:', error);
     return;
