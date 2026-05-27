@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { BACKEND_ROOT_URL } from './axios';
 
-const API_URL = 'http://localhost:5000/api/auth';
+const API_URL = `${BACKEND_ROOT_URL}/api/auth`;
 
 export const loginUser = async (email: string, password: string) => {
   try {

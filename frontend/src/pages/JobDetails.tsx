@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
 import { Star, Sparkles, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import apiClient from '../api/axios';
 
 export default function JobDetails() {
   const { id } = useParams();
@@ -15,13 +15,13 @@ export default function JobDetails() {
   const [userProfile, setUserProfile] = useState("Software Developer based in India focused on backend engineering. Tech stack: Node.js, Express.js, Next.js. Experience with Neon PostgreSQL, Drizzle ORM, microservices architecture, and building event-driven AI workflow orchestrators.");
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/api/jobs/${id}`).then(res => setJob(res.data));
+    apiClient.get(`/jobs/${id}`).then(res => setJob(res.data));
   }, [id]);
 
   const runAiAnalysis = async () => {
     setIsAnalyzing(true);
     try {
-      const res = await axios.post(`http://localhost:5000/api/jobs/${id}/analyze`, { userProfile });
+      const res = await apiClient.post(`/jobs/${id}/analyze`, { userProfile });
       setAiData(res.data.analysis);
     } catch (error) {
       console.error("Failed to analyze", error);

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Loader2, KeyRound, ArrowRight } from 'lucide-react';
-import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import CareerBridgeIcon from '../components/CareerBridgeIcon';
+import apiClient from '../api/axios';
 
 
 export default function Register() {
@@ -35,7 +35,7 @@ export default function Register() {
 
     try {
 
-      await axios.post('http://localhost:5000/api/auth/register', { email, password });
+      await apiClient.post('/auth/register', { email, password });
       
 
       setStep(2); 
@@ -54,7 +54,7 @@ export default function Register() {
 
     try {
 
-      const res = await axios.post('http://localhost:5000/api/auth/verify-otp', { email, otp });
+      const res = await apiClient.post('/auth/verify-otp', { email, otp });
       
 
       login(res.data.token);
